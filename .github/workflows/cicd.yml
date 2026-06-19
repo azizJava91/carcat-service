@@ -90,6 +90,6 @@ jobs:
           username: root
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker compose pull carland-service
-            docker compose up -d --no-deps carland-service
+            docker-compose pull carland-service
+            docker-compose up -d --no-deps carland-service
             
