@@ -16,6 +16,8 @@ import com.carland.carland_service.service.interfaces.AutoServiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 @RequiredArgsConstructor
 public class AutoServiceServiceImpl implements AutoServiceService {
@@ -106,9 +108,8 @@ public class AutoServiceServiceImpl implements AutoServiceService {
 
         ServiceHistory serviceHistory = ServiceHistory.builder()
                 .serviceName(request.getServiceName())
-                .actionType(serviceEntity.getActionType())
-                .serviceAmount(request.getServiceAmount())
-                .workedAutoServiceId(autoService.getId())
+                .actionType(Collections.singletonList(serviceEntity.getActionType()))                .serviceAmount(request.getServiceAmount())
+                .serviceCenter(autoService.getName())
                 .doneDate(request.getDoneDate())
                 .doneKm(request.getDoneKm())
                 .car(car)
@@ -118,12 +119,10 @@ public class AutoServiceServiceImpl implements AutoServiceService {
         return ServiceHistoryResponse.builder()
                 .id(serviceHistory.getId())
                 .serviceName(serviceHistory.getServiceName())
-                .actionType(serviceHistory.getActionType())
-                .doneKm(serviceHistory.getDoneKm())
+                .actionType(serviceHistory.getActionType() == null ? null : String.join(", ", serviceHistory.getActionType()))                .doneKm(serviceHistory.getDoneKm())
                 .doneDate(serviceHistory.getDoneDate())
                 .serviceName(serviceHistory.getServiceName())
                 .serviceAmount(serviceHistory.getServiceAmount())
-                .workedAutoServiceId(serviceHistory.getWorkedAutoServiceId())
                 .workedAutoServiceName(autoService.getName())
                 .build();
     }

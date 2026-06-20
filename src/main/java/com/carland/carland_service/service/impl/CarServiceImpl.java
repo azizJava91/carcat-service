@@ -521,7 +521,9 @@ public class CarServiceImpl implements CarService {
                     .toList();
 
             List<ServiceHistory> shList = serviceHistories.stream()
-                    .filter(h -> h.getServiceName().equalsIgnoreCase(serviceEntity.getServiceName()) && h.getActionType().equalsIgnoreCase(serviceEntity.getActionType()))
+                    .filter(h -> h.getServiceName().equalsIgnoreCase(serviceEntity.getServiceName())
+                            && h.getActionType() != null
+                            && h.getActionType().stream().anyMatch(action -> action.equalsIgnoreCase(serviceEntity.getActionType())))
                     .toList();
 
             LocalDate lastServiceDate = Stream.concat(csrList.stream()
@@ -918,7 +920,7 @@ public class CarServiceImpl implements CarService {
                 .brand(carRequest.getBrand())
                 .model(carRequest.getModel())
                 .modelYear(carRequest.getModelYear())
-                .engineType(carRequest.getEngineType())
+                .engineType(engineType.getEngineType())
                 .engineVolume(carRequest.getEngineVolume())
                 .transmissionType(carRequest.getTransmissionType())
                 .bodyType(carRequest.getBodyType())

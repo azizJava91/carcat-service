@@ -140,9 +140,12 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
     }
 
     private MaintenanceTemplateResponse convert(MaintenanceTemplate template, String acceptLanguage) {
+
+        EngineType engineType = template.getEngineType();
         return MaintenanceTemplateResponse.builder()
                 .id(template.getId())
-//                .engineType(template.getEngineType())
+                .engineType(engineType.getEngineType())
+                .engineTypeId(engineType.getEngineTypeId())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .build();
     }

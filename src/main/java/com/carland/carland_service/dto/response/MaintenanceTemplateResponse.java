@@ -13,11 +13,8 @@ import java.util.List;
 @Builder
 public class MaintenanceTemplateResponse {
     Long id;
-    String brand;
-    String model;
-    Integer year;
     String engineType;
-    String transmissionType;
+    Long engineTypeId;
     String message;
     List<ServiceResponse> serviceResponseList;
 }
