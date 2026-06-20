@@ -23,4 +23,6 @@ public interface ServiceHistoryRepository extends JpaRepository<ServiceHistory, 
                                                                            @Param("car") Car car);
 
     List<ServiceHistory> findAllByCar(Car car);
+
+    List<ServiceHistory> findAllByCarOrderByDoneDateDescIdDesc(Car car);
 }

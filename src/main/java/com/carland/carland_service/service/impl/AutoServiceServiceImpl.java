@@ -108,8 +108,10 @@ public class AutoServiceServiceImpl implements AutoServiceService {
 
         ServiceHistory serviceHistory = ServiceHistory.builder()
                 .serviceName(request.getServiceName())
-                .actionType(Collections.singletonList(serviceEntity.getActionType()))                .serviceAmount(request.getServiceAmount())
+                .actionType(Collections.singletonList(serviceEntity.getActionType()))
+                .serviceAmount(request.getServiceAmount())
                 .serviceCenter(autoService.getName())
+                .serviceCenterId(autoService.getId())
                 .doneDate(request.getDoneDate())
                 .doneKm(request.getDoneKm())
                 .car(car)
@@ -119,11 +121,12 @@ public class AutoServiceServiceImpl implements AutoServiceService {
         return ServiceHistoryResponse.builder()
                 .id(serviceHistory.getId())
                 .serviceName(serviceHistory.getServiceName())
-                .actionType(serviceHistory.getActionType() == null ? null : String.join(", ", serviceHistory.getActionType()))                .doneKm(serviceHistory.getDoneKm())
+                .actionType(serviceHistory.getActionType() == null ? null : String.join(", ", serviceHistory.getActionType()))
+                .doneKm(serviceHistory.getDoneKm())
                 .doneDate(serviceHistory.getDoneDate())
-                .serviceName(serviceHistory.getServiceName())
                 .serviceAmount(serviceHistory.getServiceAmount())
-                .workedAutoServiceName(autoService.getName())
+                .serviceCenter(serviceHistory.getServiceCenter())
+                .serviceCenterId(serviceHistory.getServiceCenterId() != null ? serviceHistory.getServiceCenterId() : 1L)
                 .build();
     }
 

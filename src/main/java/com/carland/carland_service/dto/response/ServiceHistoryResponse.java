@@ -20,6 +20,6 @@ public class ServiceHistoryResponse {
     LocalDate doneDate;
     Integer doneKm;
     BigDecimal serviceAmount;
-    Long workedAutoServiceId;
-    String workedAutoServiceName;
+    String serviceCenter;
+    Long serviceCenterId;
 }

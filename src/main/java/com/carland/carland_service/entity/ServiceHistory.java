@@ -3,6 +3,8 @@ package com.carland.carland_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,24 +21,20 @@ public class ServiceHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    String serviceName;   // Source: HyperResponse.serviceType
-    List<String> actionType;  // Source: HyperResponse.serviceGroups
-    LocalDate doneDate;   // Source: HyperResponse.lastServiceDate
-    Integer doneKm;       // Source: HyperResponse.lastServiceMileage
-
-
-    /**
-     * The service center identifier.
-     *
-     * Currently, the system works only with the Hyper Service, so this field
-     * is set to "Hyper Service" by default.
-     *
-     * In the future, this value will be made dynamic to support multiple service centers.
-     */
+    String serviceName;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    List<String> actionType;
+    LocalDate doneDate;
+    Integer doneKm;
     String serviceCenter;
-
-    String dealer;
+    @Column(name = "service_center_id")
+    Long serviceCenterId;
     BigDecimal serviceAmount;
+    String dealer;
+    LocalDate nextServiceDate;
+    Integer nextServiceMileage;
+    String source;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
     @ToString.Exclude

@@ -13,6 +13,7 @@ import com.carland.carland_service.repository.CustomerRepository;
 import com.carland.carland_service.repository.MaintenanceTemplateRepository;
 import com.carland.carland_service.service.impl.HyperTokenService;
 import com.carland.carland_service.service.interfaces.CarService;
+import com.carland.carland_service.service.interfaces.CarVinHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import java.util.List;
 public class CarController {
 
     private final CarService carService;
+    private final CarVinHistoryService carVinHistoryService;
     private final MaintenanceTemplateRepository maintenanceTemplateRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -191,6 +193,14 @@ public class CarController {
         System.err.println("/get/service/records cagrildi");
         return carService.getServiceRecords(carId, phoneNumber, userIdHeader, timezone, acceptLanguage);
 
+    }
+
+    @GetMapping("/{vin}/service-history")
+    public CarVinServiceHistoryResponse getServiceHistoryByVin(@PathVariable String vin,
+                                                                @RequestHeader("phoneNumber") String phoneNumber,
+                                                                @RequestHeader("X-User-Id") String userIdHeader,
+                                                                @RequestHeader("Accept-Language") String acceptLanguage) {
+        return carVinHistoryService.getServiceHistoryByVin(vin, phoneNumber, userIdHeader, acceptLanguage);
     }
 
     @PostMapping("/remove/simulated/customer")
