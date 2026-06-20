@@ -25,6 +25,9 @@ public class VinService {
 
         Map<String, String> output = new HashMap<>();
 
+
+
+
         for (Map<String, Object> item : results) {
             String variable = (String) item.get("Variable");
             String value = item.get("Value") != null ? item.get("Value").toString() : null;
