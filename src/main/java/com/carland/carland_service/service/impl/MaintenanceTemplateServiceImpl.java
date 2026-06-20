@@ -5,6 +5,7 @@ import com.carland.carland_service.dto.request.ServiceRequest;
 import com.carland.carland_service.dto.response.MaintenanceTemplateResponse;
 import com.carland.carland_service.dto.response.ServiceResponse;
 import com.carland.carland_service.entity.Brand;
+import com.carland.carland_service.entity.EngineType;
 import com.carland.carland_service.entity.MaintenanceTemplate;
 import com.carland.carland_service.entity.ServiceEntity;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
@@ -43,45 +44,43 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
     public MaintenanceTemplateResponse createMaintenanceTemplate(MaintenanceTemplateRequest request,
                                                                  String role, String phoneNumber, String userIdHeader,
                                                                  String timezone, String acceptLanguage) {
-        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
-            throw new InvalidStatusException(EnumMessagesLangValues.INVALID_ROLE_PERMISSION.getMessageByLang(acceptLanguage));
-        }
+//        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
+//            throw new InvalidStatusException(EnumMessagesLangValues.INVALID_ROLE_PERMISSION.getMessageByLang(acceptLanguage));
+//        }
+//
+//        if (request.getEngineType() == null ) {
+//            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
+//        }
+//
+//
+//        MaintenanceTemplate existingTemplate = maintenanceTemplateRepository.
+//                findByBrandAndModelAndYearAndEngineTypeAndTransmissionType(
+//                        request.getBrand(), request.getModel(), request.getYear(), request.getEngineType(), request.getTransmissionType());
+//        if (existingTemplate != null) {
+//            throw new AlreadyExistsException(EnumMessagesLangValues.TEMPLATE_ALREADY_EXISTS.getMessageByLang(acceptLanguage));
+//        }
+//
+//        MaintenanceTemplate newTemplate = MaintenanceTemplate.builder()
+//                .engineType(request.getEngineType())
+//                .transmissionType(request.getTransmissionType())
+//                .build();
+//
+//        maintenanceTemplateRepository.save(newTemplate);
+//
+//        boolean exists = brandRepository.existsByBrandName(newTemplate.getBrand());
+//
+//        if (exists) {
+//            log.info("brand found, not create new brand");
+//        } else {
+//            Brand brand = Brand.builder()
+//                    .brandName(newTemplate.getBrand())
+//                    .status(EnumUserStatus.ACTIVE.name())
+//                    .build();
+//
+//            brandRepository.save(brand);
+//        }
 
-        if (request.getBrand() == null || request.getModel() == null || request.getYear() == null ||
-                request.getEngineType() == null || request.getTransmissionType() == null) {
-            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
-        }
-        MaintenanceTemplate existingTemplate = maintenanceTemplateRepository.
-                findByBrandAndModelAndYearAndEngineTypeAndTransmissionType(
-                        request.getBrand(), request.getModel(), request.getYear(), request.getEngineType(), request.getTransmissionType());
-        if (existingTemplate != null) {
-            throw new AlreadyExistsException(EnumMessagesLangValues.TEMPLATE_ALREADY_EXISTS.getMessageByLang(acceptLanguage));
-        }
-
-        MaintenanceTemplate newTemplate = MaintenanceTemplate.builder()
-                .brand(request.getBrand())
-                .model(request.getModel())
-                .year(request.getYear())
-                .engineType(request.getEngineType())
-                .transmissionType(request.getTransmissionType())
-                .build();
-
-        maintenanceTemplateRepository.save(newTemplate);
-
-        boolean exists = brandRepository.existsByBrandName(newTemplate.getBrand());
-
-        if (exists) {
-            log.info("brand found, not create new brand");
-        } else {
-            Brand brand = Brand.builder()
-                    .brandName(newTemplate.getBrand())
-                    .status(EnumUserStatus.ACTIVE.name())
-                    .build();
-
-            brandRepository.save(brand);
-        }
-
-        return convert(newTemplate, acceptLanguage);
+        return null;
     }
 
     @Override
@@ -143,11 +142,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
     private MaintenanceTemplateResponse convert(MaintenanceTemplate template, String acceptLanguage) {
         return MaintenanceTemplateResponse.builder()
                 .id(template.getId())
-                .brand(template.getBrand())
-                .model(template.getModel())
-                .year(template.getYear())
-                .engineType(template.getEngineType())
-                .transmissionType(template.getTransmissionType())
+//                .engineType(template.getEngineType())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .build();
     }

@@ -9,13 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface MaintenanceTemplateRepository extends JpaRepository<MaintenanceTemplate, Long> {
-    MaintenanceTemplate findByBrandAndModelAndYearAndEngineTypeAndTransmissionType(
-            String brand,
-            String model,
-            Integer year,
-            String engineType,
-            String transmissionType
-    );
+
 
     Optional<MaintenanceTemplate> findByEngineType(EngineType engineType);
 }

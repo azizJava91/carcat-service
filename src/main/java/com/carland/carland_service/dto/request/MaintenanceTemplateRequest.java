@@ -9,9 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MaintenanceTemplateRequest {
-    String brand;
-    String model;
-    Integer year;
+
     String engineType;
-    String transmissionType;
+
 }
