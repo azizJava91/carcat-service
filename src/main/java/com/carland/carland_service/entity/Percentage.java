@@ -37,7 +37,13 @@ public class Percentage {
     Integer kmPercentage;
     Integer monthPercentage;
 
-    String status; // status eklediim ki eger bu percentage "edited" edilmis ise o zaman direct percentage datalari response a eklensin, eger "created" ise mevcut hesaplanmaya tabih tutulsun ve o sekilde response eklensin
+
+    /**
+     * Added status field to control percentage handling.
+     * If status is "edited", percentage values are returned directly in the response.
+     * If status is "created", percentage values are recalculated and then added to the response.
+     */
+    String status;
 
     Long carId;
 

@@ -13,4 +13,6 @@ public interface EngineTypeRepository extends JpaRepository<EngineType, Long> {
 
 
     List<EngineType> findAllByStatusOrderByEngineTypeIdAsc(String status);
+
+    EngineType findByEngineTypeId(Long engineTypeId);
 }

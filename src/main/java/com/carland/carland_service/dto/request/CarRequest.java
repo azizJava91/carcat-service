@@ -19,6 +19,7 @@ public class CarRequest {
     Integer modelYear;
     Long colorId;
     String engineType;
+    Long engineTypeId;
     Integer engineVolume;
     String transmissionType;
     String bodyType;

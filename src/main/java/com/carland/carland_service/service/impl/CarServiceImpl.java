@@ -45,6 +45,7 @@ public class CarServiceImpl implements CarService {
     private final DeviceTokenRepository deviceTokenRepository;
     private final PushNotificationService pushNotificationService;
     private final LogRepository logRepository;
+    private final EngineTypeRepository engineTypeRepository;
 //    private static final List<String> simulatedVins = List.of(
 //            "JTJGB7CX2R4121777",
 //            "LFMAAA0C6S0640604",
@@ -871,7 +872,7 @@ public class CarServiceImpl implements CarService {
     public CarResponse addCar(CarRequest carRequest, String phoneNumber, String userIdHeader,
                               String timezone, String acceptLanguage) {
 
-        if (carRequest == null || phoneNumber == null || userIdHeader == null) {
+        if (carRequest == null || phoneNumber == null || userIdHeader == null || carRequest.getEngineType() == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
@@ -889,7 +890,7 @@ public class CarServiceImpl implements CarService {
         }
 
 
-        // 🔵 2️⃣ NORMAL FLOW DEVAM EDİYOR
+        // 🔵 2️⃣ NORMAL FLOW DEVAM EDİR
 
         Car existingCar = carRepository.findByVin(carRequest.getVin());
 
@@ -905,10 +906,11 @@ public class CarServiceImpl implements CarService {
             return convertCarEntityToResponse(existingCar, acceptLanguage, "fromDb");
         }
 
-        MaintenanceTemplate maintenanceTemplate = maintenanceTemplateRepository
-                .findById(3L)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage)));
+        EngineType engineType = engineTypeRepository.findByEngineTypeId(carRequest.getEngineTypeId());
+
+
+        MaintenanceTemplate maintenanceTemplate = maintenanceTemplateRepository.findByEngineType(engineType)
+                .orElseThrow(() -> new ResourceNotFoundException(EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage)));
 
         Car newCar = Car.builder()
                 .vin(carRequest.getVin())
