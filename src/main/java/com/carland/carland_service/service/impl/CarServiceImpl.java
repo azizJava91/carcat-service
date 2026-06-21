@@ -301,9 +301,9 @@ public class CarServiceImpl implements CarService {
         }
 
 
-//        if (carRequest.getMileage() != null) {
-//            car.setMileage(carRequest.getMileage());
-//        }
+        if (carRequest.getMileage() != null) {
+            car.setMileage(carRequest.getMileage());
+        }
 
         if (carRequest.getPlateNumber() != null) {
             car.setPlateNumber(carRequest.getPlateNumber());
