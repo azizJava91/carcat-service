@@ -18,8 +18,7 @@ public class MaintenanceTemplateController {
     private final MaintenanceTemplateService maintenanceTemplateService;
     @GetMapping("/get/services")
 
-//    public MaintenanceTemplateResponse getServiceListByTemplate ()
-//n
+
     @PostMapping("/create")
     public MaintenanceTemplateResponse createMaintenanceTemplate(@RequestBody MaintenanceTemplateRequest maintenanceTemplateRequest,
                                                                  @RequestHeader("Authorization") String token,
@@ -53,4 +52,6 @@ public class MaintenanceTemplateController {
         return maintenanceTemplateService.addServiceToTemplate(templateId, request, phoneNumber, userIdHeader, role, timezone, acceptLanguage);
 
     }
+
+
 }

@@ -911,9 +911,11 @@ public class CarServiceImpl implements CarService {
 
         EngineType engineType = engineTypeRepository.findByEngineTypeId(carRequest.getEngineTypeId());
 
+        log.info("Engine type: {}, engine type id: {}", engineType.getEngineType(), engineType.getEngineTypeId());
 
         MaintenanceTemplate maintenanceTemplate = maintenanceTemplateRepository.findByEngineType(engineType)
                 .orElseThrow(() -> new ResourceNotFoundException(EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage)));
+        log.info("template id: {}, template name: {}", maintenanceTemplate.getId(), maintenanceTemplate.getName());
 
         Car newCar = Car.builder()
                 .vin(carRequest.getVin())

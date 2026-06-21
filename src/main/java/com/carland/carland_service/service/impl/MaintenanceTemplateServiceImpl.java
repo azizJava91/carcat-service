@@ -147,6 +147,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 .engineType(engineType.getEngineType())
                 .engineTypeId(engineType.getEngineTypeId())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
+                .serviceResponseList(template.getServices().stream().map(this::convert).toList())
                 .build();
     }
 
