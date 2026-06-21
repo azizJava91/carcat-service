@@ -104,7 +104,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
-        if( request.getIntervalKm() == null || request.getIntervalMonth() == null){
+        if( request.getIntervalKm() == null && request.getIntervalMonth() == null){
             throw new MissingFieldException("zaman ve km intervallarinin en azi biri daxil edilmelidir");
         }
 //        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
