@@ -144,6 +144,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
         EngineType engineType = template.getEngineType();
         return MaintenanceTemplateResponse.builder()
                 .id(template.getId())
+                .name(template.getName())
                 .engineType(engineType.getEngineType())
                 .engineTypeId(engineType.getEngineTypeId())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))

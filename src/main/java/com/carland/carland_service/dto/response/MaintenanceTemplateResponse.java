@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class MaintenanceTemplateResponse {
     Long id;
+    String name;
     String engineType;
     Long engineTypeId;
     String message;
