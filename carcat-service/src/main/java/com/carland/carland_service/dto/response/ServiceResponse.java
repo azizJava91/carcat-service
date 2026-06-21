@@ -5,14 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceTemplateResponse {
+public class ServiceResponse {
     Long id;
-    String engineType;
-    List<ServiceResponse> serviceResponseList;
+    String serviceName;
+    String actionType;
+    Long intervalKm;
+    Integer intervalMonth;
+    Double amount;
 }

@@ -11,8 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceTemplateResponse {
-    Long id;
-    String engineType;
-    List<ServiceResponse> serviceResponseList;
+public class CustomerWithCarResponse {
+
+    private CustomerResponse customerResponse;
+    private List<CarResponseForLink> carResponses;
+
+
 }

@@ -7,12 +7,13 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceTemplateResponse {
-    Long id;
-    String engineType;
-    List<ServiceResponse> serviceResponseList;
+public class PercentageResponseMain {
+    Long carId;
+    String vin;
+    List<CarServicePercentageResponse> responseList;
 }

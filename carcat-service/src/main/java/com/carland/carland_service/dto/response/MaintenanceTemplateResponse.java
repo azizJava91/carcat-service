@@ -14,5 +14,7 @@ import java.util.List;
 public class MaintenanceTemplateResponse {
     Long id;
     String engineType;
+    Long engineTypeId;
+    String message;
     List<ServiceResponse> serviceResponseList;
 }

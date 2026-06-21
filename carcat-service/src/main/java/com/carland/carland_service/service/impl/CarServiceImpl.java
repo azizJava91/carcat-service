@@ -874,7 +874,7 @@ public class CarServiceImpl implements CarService {
     public CarResponse addCar(CarRequest carRequest, String phoneNumber, String userIdHeader,
                               String timezone, String acceptLanguage) {
 
-        if (carRequest == null || phoneNumber == null || userIdHeader == null || carRequest.getEngineTypeId() == null) {
+        if (carRequest == null || phoneNumber == null || userIdHeader == null || carRequest.getEngineType() == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 

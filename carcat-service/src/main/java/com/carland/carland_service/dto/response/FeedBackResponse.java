@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceTemplateResponse {
-    Long id;
-    String engineType;
-    List<ServiceResponse> serviceResponseList;
+public class FeedBackResponse {
+    String message;
+    String estimatedResponseTime;
+    Long ticketId;
 }

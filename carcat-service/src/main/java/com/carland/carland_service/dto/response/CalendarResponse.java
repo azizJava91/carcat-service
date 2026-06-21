@@ -11,8 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceTemplateResponse {
-    Long id;
-    String engineType;
-    List<ServiceResponse> serviceResponseList;
+public class CalendarResponse {
+    List<RangeResponse> timeRanges;
+    String message;
 }

@@ -16,10 +16,7 @@ import java.util.List;
 public class MaintenanceTemplateController {
 
     private final MaintenanceTemplateService maintenanceTemplateService;
-    @GetMapping("/get/services")
 
-//    public MaintenanceTemplateResponse getServiceListByTemplate ()
-//n
     @PostMapping("/create")
     public MaintenanceTemplateResponse createMaintenanceTemplate(@RequestBody MaintenanceTemplateRequest maintenanceTemplateRequest,
                                                                  @RequestHeader("Authorization") String token,
