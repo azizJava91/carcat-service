@@ -104,9 +104,9 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 request.getIntervalKm() == null || request.getIntervalMonth() == null || role == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
-        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
-            throw new InvalidStatusException(EnumMessagesLangValues.INVALID_ROLE_PERMISSION.getMessageByLang(acceptLanguage));
-        }
+//        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
+//            throw new InvalidStatusException(EnumMessagesLangValues.INVALID_ROLE_PERMISSION.getMessageByLang(acceptLanguage));
+//        }
 
         MaintenanceTemplate template = maintenanceTemplateRepository.findById(templateId).orElseThrow(
                 () -> new ResourceNotFoundException(EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage)));
@@ -125,6 +125,9 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 .intervalMonth(request.getIntervalMonth())
                 .intervalKm(request.getIntervalKm())
                 .maintenanceTemplate(template)
+                .nameAz(request.getNameAz())
+                .nameEn(request.getNameEn())
+                .nameRu(request.getNameRu())
                 .build();
 
         template.getServices().add(newService);
