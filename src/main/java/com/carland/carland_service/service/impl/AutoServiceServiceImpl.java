@@ -132,11 +132,11 @@ public class AutoServiceServiceImpl implements AutoServiceService {
 
     @Override
     public ServiceResponse getService(ServiceRequest request, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage) {
-        if (request.getServiceName() == null || request.getAutoServiceId() == null) {
+        if (request.getServiceName() == null ) {
             throw new MissingFieldException(EnumMessagesLangValues.SERVICE_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
-        AutoService autoService = autoServiceRepository.findById(request.getAutoServiceId()).orElseThrow(
-                () -> new ResourceNotFoundException(EnumMessagesLangValues.AUTO_SERVICE_NOT_FOUND.getMessageByLang(acceptLanguage)));
+//        AutoService autoService = autoServiceRepository.findById(request.getAutoServiceId()).orElseThrow(
+//                () -> new ResourceNotFoundException(EnumMessagesLangValues.AUTO_SERVICE_NOT_FOUND.getMessageByLang(acceptLanguage)));
 
         return null;
     }

@@ -9,9 +9,19 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServiceRequest {
+
     String serviceName;
+
     String actionType;
+
+    String nameAz;
+
+    String nameEn;
+
+    String nameRu;
+
     Long intervalKm;
+
     Integer intervalMonth;
-    Long autoServiceId;
+
 }

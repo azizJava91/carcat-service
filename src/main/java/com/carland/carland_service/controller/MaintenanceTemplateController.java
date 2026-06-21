@@ -16,7 +16,6 @@ import java.util.List;
 public class MaintenanceTemplateController {
 
     private final MaintenanceTemplateService maintenanceTemplateService;
-    @GetMapping("/get/services")
 
 
     @PostMapping("/create")

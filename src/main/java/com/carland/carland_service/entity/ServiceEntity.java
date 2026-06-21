@@ -31,13 +31,9 @@ public class ServiceEntity {
 
     Integer intervalMonth;//    standard interval time
 
-//    Double amount;
-//    Long autoServiceId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
     @JsonIgnore
     @ToString.Exclude
     MaintenanceTemplate maintenanceTemplate;
-
-
 }
