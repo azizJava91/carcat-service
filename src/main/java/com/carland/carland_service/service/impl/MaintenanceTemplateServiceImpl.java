@@ -163,6 +163,9 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 .id(service.getId())
                 .serviceName(service.getServiceName())
                 .actionType(service.getActionType())
+                .nameAz(service.getNameAz())
+                .nameEn(service.getNameEn())
+                .nameRu(service.getNameRu())
                 .intervalMonth(service.getIntervalMonth())
                 .intervalKm(service.getIntervalKm())
                 .build();

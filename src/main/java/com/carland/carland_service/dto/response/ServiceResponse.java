@@ -16,4 +16,7 @@ public class ServiceResponse {
     Long intervalKm;
     Integer intervalMonth;
     Double amount;
+    String nameAz;//    name_az
+    String nameEn;//    name_en
+    String nameRu;//    name_ru
 }
