@@ -100,9 +100,12 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
     public MaintenanceTemplateResponse addServiceToTemplate(Long templateId, ServiceRequest request, String phoneNumber,
                                                             String userIdHeader, String role, String timezone, String acceptLanguage) {
 
-        if (templateId == null || request == null || request.getServiceName() == null || request.getActionType() == null ||
-                request.getIntervalKm() == null || request.getIntervalMonth() == null || role == null) {
+        if (templateId == null || request == null || request.getServiceName() == null || request.getActionType() == null || role == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
+        }
+
+        if( request.getIntervalKm() == null || request.getIntervalMonth() == null){
+            throw new MissingFieldException("zaman ve km intervallarinin en azi biri daxil edilmelidir");
         }
 //        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
 //            throw new InvalidStatusException(EnumMessagesLangValues.INVALID_ROLE_PERMISSION.getMessageByLang(acceptLanguage));
