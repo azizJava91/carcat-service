@@ -313,8 +313,9 @@ public class CarServiceImpl implements CarService {
 //            car.setColorId(carRequest.getColorId());
 //        }
 
-        if (carRequest.getEngineType() != null) {
-            car.setEngineType(carRequest.getEngineType());
+        if (carRequest.getEngineTypeId() != null) {
+            EngineType engineType = engineTypeRepository.findByEngineTypeId(carRequest.getEngineTypeId());
+            car.setEngineType(engineType.getEngineType());
         }
 
         if (carRequest.getEngineVolume() != null) {
