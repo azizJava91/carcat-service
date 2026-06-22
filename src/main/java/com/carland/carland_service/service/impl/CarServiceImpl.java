@@ -186,45 +186,41 @@ public class CarServiceImpl implements CarService {
 
 
     @Override
-    public List<RecordResponse> getServiceRecords(Long carId,
-                                                  String phoneNumber,
-                                                  String userIdHeader,
-                                                  String timezone,
-                                                  String acceptLanguage) {
+    public List<RecordResponse> getServiceRecords(Long carId, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage) {
 
         if (carId == null || phoneNumber == null || userIdHeader == null || acceptLanguage == null) {
-            throw new MissingFieldException(
-                    EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage)
-            );
+            log.info("body de missing fieldler var");
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
-        Customer customer = customerRepository
-                .findByUserIdAndPhoneNumberAndStatus(
-                        Long.valueOf(userIdHeader),
-                        phoneNumber,
-                        EnumUserStatus.ACTIVE.name()
-                );
+        Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(Long.valueOf(userIdHeader),
+                phoneNumber, EnumUserStatus.ACTIVE.name());
 
         if (customer == null) {
-            throw new UserNotFoundException(
-                    EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage)
-            );
+            log.info("customer tapilmadi");
+            throw new UserNotFoundException(EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
+        log.info("Customer adi:{}", customer.getName());
 
         Car car = carRepository.findByCarIdAndCustomer(carId, customer);
+
         if (car == null) {
-            throw new ResourceNotFoundException(
-                    EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage)
-            );
+            log.info("car tapilmadi");
+            throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
+        log.info("car id : {}", car.getCarId());
 
         List<CustomerServiceRecord> customerServiceRecordList = car.getServiceRecordList();
 
         if (customerServiceRecordList == null || customerServiceRecordList.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    EnumMessagesLangValues.RECORD_NOT_FOUND.getMessageByLang(acceptLanguage)
-            );
+            log.info("customer service record list bosdur");
+            throw new ResourceNotFoundException(EnumMessagesLangValues.RECORD_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
+
+        log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+        log.info("record list:  {}", customerServiceRecordList);
+        log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+
 
         List<String> serviceOrder = List.of(
                 "Engine oil and oil filter",
@@ -245,22 +241,14 @@ public class CarServiceImpl implements CarService {
         }
 
         return customerServiceRecordList.stream()
-                .sorted(Comparator.comparingInt(
-                        record -> serviceOrderMap.getOrDefault(
-                                record.getServiceName(),
-                                Integer.MAX_VALUE
-                        )
-                ))
+                .sorted(Comparator.comparingInt(record -> serviceOrderMap.getOrDefault(record.getServiceName(), Integer.MAX_VALUE)))
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
-                        .serviceName(
-                                ServiceNameAz.translate(record.getServiceName(), acceptLanguage)
-                        )
+                        .serviceName(ServiceNameAz.translate(record.getServiceName(), acceptLanguage))
                         .actionType(record.getActionType())
                         .doneDate(record.getDoneDate())
                         .doneKm(record.getDoneKm())
-                        .build()
-                )
+                        .build())
                 .toList();
     }
 
@@ -495,7 +483,7 @@ public class CarServiceImpl implements CarService {
 
                         CarServicePercentageResponse.builder()
                                 .percentageId(percentage.getId())
-                                .serviceName(switch (acceptLanguage){
+                                .serviceName(switch (acceptLanguage) {
                                     case "az" -> percentage.getServiceNameAz();
                                     case "ru" -> percentage.getServiceNameRu();
                                     default -> percentage.getServiceName();
@@ -602,7 +590,7 @@ public class CarServiceImpl implements CarService {
             responseList.add(
                     CarServicePercentageResponse.builder()
                             .percentageId(percentage != null ? percentage.getId() : null)
-                            .serviceName(switch (acceptLanguage){
+                            .serviceName(switch (acceptLanguage) {
                                 case "az" -> percentage.getServiceNameAz();
                                 case "ru" -> percentage.getServiceNameRu();
                                 default -> percentage.getServiceName();
@@ -681,7 +669,7 @@ public class CarServiceImpl implements CarService {
 
         return CarServicePercentageResponse.builder()
                 .percentageId(percentage.getId())
-                .serviceName(switch (acceptLanguage){
+                .serviceName(switch (acceptLanguage) {
                     case "az" -> percentage.getServiceNameAz();
                     case "ru" -> percentage.getServiceNameRu();
                     default -> percentage.getServiceName();
@@ -847,7 +835,7 @@ public class CarServiceImpl implements CarService {
             /* ===== RESPONSE ===== */
             responseList.add(
                     CarServicePercentageResponse.builder()
-                            .serviceName(switch (acceptLanguage){
+                            .serviceName(switch (acceptLanguage) {
                                 case "az" -> percentage.getServiceNameAz();
                                 case "ru" -> percentage.getServiceNameRu();
                                 default -> percentage.getServiceName();
