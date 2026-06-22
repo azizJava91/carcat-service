@@ -602,7 +602,11 @@ public class CarServiceImpl implements CarService {
             responseList.add(
                     CarServicePercentageResponse.builder()
                             .percentageId(percentage != null ? percentage.getId() : null)
-                            .serviceName(ServiceNameAz.translate(serviceEntity.getServiceName(), acceptLanguage))
+                            .serviceName(switch (acceptLanguage){
+                                case "az" -> percentage.getServiceNameAz();
+                                case "ru" -> percentage.getServiceNameRu();
+                                default -> percentage.getServiceName();
+                            })
                             .actionType(serviceEntity.getActionType())
                             .intervalKm(serviceEntity.getIntervalKm())
                             .intervalMonth(serviceEntity.getIntervalMonth())
@@ -677,7 +681,11 @@ public class CarServiceImpl implements CarService {
 
         return CarServicePercentageResponse.builder()
                 .percentageId(percentage.getId())
-                .serviceName(percentage.getServiceName())
+                .serviceName(switch (acceptLanguage){
+                    case "az" -> percentage.getServiceNameAz();
+                    case "ru" -> percentage.getServiceNameRu();
+                    default -> percentage.getServiceName();
+                })
                 .actionType(percentage.getActionType())
 
                 .intervalKm(percentage.getIntervalKm())
@@ -839,7 +847,11 @@ public class CarServiceImpl implements CarService {
             /* ===== RESPONSE ===== */
             responseList.add(
                     CarServicePercentageResponse.builder()
-                            .serviceName(percentage.getServiceName())
+                            .serviceName(switch (acceptLanguage){
+                                case "az" -> percentage.getServiceNameAz();
+                                case "ru" -> percentage.getServiceNameRu();
+                                default -> percentage.getServiceName();
+                            })
                             .actionType(percentage.getActionType())
                             .intervalKm((long) intervalKm)
                             .intervalMonth(intervalMonth)
