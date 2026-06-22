@@ -250,7 +250,7 @@ public class CarServiceImpl implements CarService {
 //                        .doneKm(record.getDoneKm())
 //                        .build())
 //                .toList();
-        return customerServiceRecordList.stream()
+        List<RecordResponse> responses = customerServiceRecordList.stream()
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
                         .serviceName(ServiceNameAz.translate(record.getServiceName(), acceptLanguage))
@@ -259,6 +259,8 @@ public class CarServiceImpl implements CarService {
                         .doneKm(record.getDoneKm())
                         .build())
                 .toList();
+        log.info("responses: {}", responses);
+        return responses;
     }
 
 
