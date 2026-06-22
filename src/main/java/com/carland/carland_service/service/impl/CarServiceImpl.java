@@ -892,48 +892,97 @@ public class CarServiceImpl implements CarService {
     public CarResponse addCar(CarRequest carRequest, String phoneNumber, String userIdHeader,
                               String timezone, String acceptLanguage) {
 
+        log.info("[addCar] START | phoneNumber={}, userIdHeader={}, timezone={}, acceptLanguage={}",
+                phoneNumber, userIdHeader, timezone, acceptLanguage);
+        log.info("[addCar] CarRequest | vin={}, plateNumber={}, brand={}, model={}, modelYear={}, colorId={}, " +
+                        "engineType={}, engineTypeId={}, engineVolume={}, transmissionType={}, bodyType={}, " +
+                        "mileage={}, carId={}, vinProvidedFields={}",
+                carRequest != null ? carRequest.getVin() : null,
+                carRequest != null ? carRequest.getPlateNumber() : null,
+                carRequest != null ? carRequest.getBrand() : null,
+                carRequest != null ? carRequest.getModel() : null,
+                carRequest != null ? carRequest.getModelYear() : null,
+                carRequest != null ? carRequest.getColorId() : null,
+                carRequest != null ? carRequest.getEngineType() : null,
+                carRequest != null ? carRequest.getEngineTypeId() : null,
+                carRequest != null ? carRequest.getEngineVolume() : null,
+                carRequest != null ? carRequest.getTransmissionType() : null,
+                carRequest != null ? carRequest.getBodyType() : null,
+                carRequest != null ? carRequest.getMileage() : null,
+                carRequest != null ? carRequest.getCarId() : null,
+                carRequest != null ? carRequest.getVinProvidedFields() : null);
+
+        log.info("[addCar] CHECK required fields | carRequest={}, phoneNumber={}, userIdHeader={}, engineTypeId={}",
+                carRequest != null, phoneNumber != null, userIdHeader != null,
+                carRequest != null ? carRequest.getEngineTypeId() : null);
         if (carRequest == null || phoneNumber == null || userIdHeader == null || carRequest.getEngineTypeId() == null) {
+            log.warn("[addCar] FAIL MissingFieldException | reason=carRequest/phoneNumber/userIdHeader/engineTypeId null");
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
+        log.info("[addCar] PASS required fields check");
 
+        log.info("[addCar] CHECK vin/plateNumber/mileage | vin={}, plateNumber={}, mileage={}",
+                carRequest.getVin(), carRequest.getPlateNumber(), carRequest.getMileage());
         if (carRequest.getVin() == null || carRequest.getPlateNumber() == null || carRequest.getMileage() == null) {
+            log.warn("[addCar] FAIL MissingFieldException | reason=vin/plateNumber/mileage null");
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
+        log.info("[addCar] PASS vin/plateNumber/mileage check");
 
-        // 🔵 CUSTOMER BUL
+        log.info("[addCar] customerRepository.findByUserIdAndPhoneNumberAndStatus | userId={}, phoneNumber={}, status={}",
+                userIdHeader, phoneNumber, EnumUserStatus.ACTIVE.name());
         Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(
                 Long.valueOf(userIdHeader), phoneNumber, EnumUserStatus.ACTIVE.name());
-        log.info(userIdHeader + " " + phoneNumber);
+        log.info("[addCar] customer lookup result | customerUserId={}", customer != null ? customer.getUserId() : null);
         if (customer == null) {
-            log.info("customer null oldu");
+            log.warn("[addCar] FAIL UserNotFoundException | userIdHeader={}, phoneNumber={}", userIdHeader, phoneNumber);
             throw new UserNotFoundException(EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
+        log.info("[addCar] PASS customer found | customerUserId={}", customer.getUserId());
 
-
-        // 🔵 2️⃣ NORMAL FLOW DEVAM EDİR
-
+        log.info("[addCar] carRepository.findByVin | vin={}", carRequest.getVin());
         Car existingCar = carRepository.findByVin(carRequest.getVin());
+        log.info("[addCar] existing car lookup result | carId={}, hasCustomer={}, customerUserId={}",
+                existingCar != null ? existingCar.getCarId() : null,
+                existingCar != null && existingCar.getCustomer() != null,
+                existingCar != null && existingCar.getCustomer() != null ? existingCar.getCustomer().getUserId() : null);
 
         if (existingCar != null && existingCar.getCustomer() != null) {
-            log.info("avtomobil basqasina mexsusdur " + existingCar.getCarId() + " " + existingCar.getCustomer().getUserId());
+            log.warn("[addCar] FAIL AlreadyExistsException | carId={}, ownerUserId={}, requestUserId={}",
+                    existingCar.getCarId(), existingCar.getCustomer().getUserId(), customer.getUserId());
             throw new AlreadyExistsException("avtomobil basqasina mexsusdur");
         }
 
-
         if (existingCar != null) {
+            log.info("[addCar] BRANCH existing car without customer | linking carId={} to customerUserId={}",
+                    existingCar.getCarId(), customer.getUserId());
             existingCar.setCustomer(customer);
             customer.getCars().add(existingCar);
-            return convertCarEntityToResponse(existingCar, acceptLanguage, "fromDb");
+            log.info("[addCar] calling convertCarEntityToResponse | carId={}, resource=fromDb", existingCar.getCarId());
+            CarResponse response = convertCarEntityToResponse(existingCar, acceptLanguage, "fromDb");
+            log.info("[addCar] END success (existing car linked) | carId={}, vin={}", response.getCarId(), response.getVin());
+            return response;
         }
 
+        log.info("[addCar] BRANCH new car flow | engineTypeId={}", carRequest.getEngineTypeId());
+        log.info("[addCar] engineTypeRepository.findByEngineTypeId | engineTypeId={}", carRequest.getEngineTypeId());
         EngineType engineType = engineTypeRepository.findByEngineTypeId(carRequest.getEngineTypeId());
+        log.info("[addCar] engine type lookup result | engineTypeId={}, engineType={}",
+                engineType != null ? engineType.getEngineTypeId() : null,
+                engineType != null ? engineType.getEngineType() : null);
 
-        log.info("Engine type: {}, engine type id: {}", engineType.getEngineType(), engineType.getEngineTypeId());
-
+        log.info("[addCar] maintenanceTemplateRepository.findByEngineType | engineType={}", engineType.getEngineType());
         MaintenanceTemplate maintenanceTemplate = maintenanceTemplateRepository.findByEngineType(engineType)
-                .orElseThrow(() -> new ResourceNotFoundException(EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage)));
-        log.info("template id: {}, template name: {}", maintenanceTemplate.getId(), maintenanceTemplate.getName());
+                .orElseThrow(() -> {
+                    log.warn("[addCar] FAIL ResourceNotFoundException | reason=maintenance template not found for engineType={}",
+                            engineType.getEngineType());
+                    return new ResourceNotFoundException(EnumMessagesLangValues.TEMPLATE_NOT_FOUND.getMessageByLang(acceptLanguage));
+                });
+        log.info("[addCar] PASS maintenance template found | templateId={}, templateName={}",
+                maintenanceTemplate.getId(), maintenanceTemplate.getName());
 
+        log.info("[addCar] building new Car entity | vin={}, plateNumber={}, brand={}, model={}",
+                carRequest.getVin(), carRequest.getPlateNumber(), carRequest.getBrand(), carRequest.getModel());
         Car newCar = Car.builder()
                 .vin(carRequest.getVin())
                 .plateNumber(carRequest.getPlateNumber())
@@ -953,9 +1002,16 @@ public class CarServiceImpl implements CarService {
                 .vinProvidedFields(carRequest.getVinProvidedFields())
                 .build();
 
+        log.info("[addCar] carRepository.save | vin={}", newCar.getVin());
         carRepository.save(newCar);
+        log.info("[addCar] car saved | carId={}, vin={}", newCar.getCarId(), newCar.getVin());
 
+        log.info("[addCar] creating Percentage + CustomerServiceRecord | serviceCount={}",
+                maintenanceTemplate.getServices() != null ? maintenanceTemplate.getServices().size() : 0);
         for (ServiceEntity serviceEntity : maintenanceTemplate.getServices()) {
+            log.info("[addCar] processing ServiceEntity | serviceName={}, actionType={}, intervalKm={}, intervalMonth={}",
+                    serviceEntity.getServiceName(), serviceEntity.getActionType(),
+                    serviceEntity.getIntervalKm(), serviceEntity.getIntervalMonth());
 
             Percentage percentage = Percentage.builder()
                     .intervalKm(serviceEntity.getIntervalKm())
@@ -967,6 +1023,7 @@ public class CarServiceImpl implements CarService {
                     .carId(newCar.getCarId())
                     .build();
 
+            log.info("[addCar] percentageRepository.save | carId={}, serviceName={}", newCar.getCarId(), percentage.getServiceName());
             percentageRepository.save(percentage);
 
             CustomerServiceRecord customerServiceRecord = CustomerServiceRecord.builder()
@@ -975,13 +1032,23 @@ public class CarServiceImpl implements CarService {
                     .car(newCar)
                     .build();
 
+            log.info("[addCar] customerServiceRecordRepository.save | carId={}, serviceName={}",
+                    newCar.getCarId(), customerServiceRecord.getServiceName());
             customerServiceRecordRepository.save(customerServiceRecord);
         }
+        log.info("[addCar] PASS all service records created");
 
+        log.info("[addCar] linking car to customer | customerUserId={}, carId={}", customer.getUserId(), newCar.getCarId());
         customer.getCars().add(newCar);
+        log.info("[addCar] customerRepository.save | customerUserId={}", customer.getUserId());
         customerRepository.save(customer);
+        log.info("[addCar] PASS customer updated");
 
-        return convertCarEntityToResponse(newCar, acceptLanguage, "fromDecoderTool");
+        log.info("[addCar] calling convertCarEntityToResponse | carId={}, resource=fromDecoderTool", newCar.getCarId());
+        CarResponse response = convertCarEntityToResponse(newCar, acceptLanguage, "fromDecoderTool");
+        log.info("[addCar] END success (new car) | carId={}, vin={}, plateNumber={}",
+                response.getCarId(), response.getVin(), response.getPlateNumber());
+        return response;
     }
 
     @Override

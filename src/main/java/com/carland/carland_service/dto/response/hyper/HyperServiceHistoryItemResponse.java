@@ -6,6 +6,10 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Hyper service history item. Hyper does not provide a stable external id —
+ * deduplication uses car + serviceType + date + mileage + dealer + amount.
+ */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HyperServiceHistoryItemResponse {

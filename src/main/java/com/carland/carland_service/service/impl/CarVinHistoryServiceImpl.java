@@ -30,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +42,8 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
 
     private static final String HYPERSERVICE_SOURCE = "hyperservice";
     private static final String CACHE_SOURCE = "cache";
+
+    private static final ConcurrentHashMap<Long, Object> CAR_PERSIST_LOCKS = new ConcurrentHashMap<>();
 
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -68,30 +72,37 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
-        List<ServiceHistory> existingRows = serviceHistoryRepository.findAllByCarOrderByDoneDateDescIdDesc(car);
-        if (!existingRows.isEmpty()) {
-            return CarVinServiceHistoryResponse.builder()
-                    .vin(vin)
-                    .source(CACHE_SOURCE)
-                    .items(existingRows.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
-                    .build();
+        List<ServiceHistory> cachedRows = serviceHistoryRepository.findAllByCarOrderByDoneDateDescIdDesc(car);
+        if (!cachedRows.isEmpty()) {
+            return buildResponse(vin, CACHE_SOURCE, cachedRows, acceptLanguage);
         }
 
-        HyperVehicleByVinResponse hyperResponse = fetchHyperHistory(vin);
-        if (hyperResponse == null || hyperResponse.getServiceHistory() == null || hyperResponse.getServiceHistory().isEmpty()) {
-            return CarVinServiceHistoryResponse.builder()
-                    .vin(vin)
-                    .source(HYPERSERVICE_SOURCE)
-                    .items(Collections.emptyList())
-                    .build();
-        }
+        synchronized (lockForCar(car.getCarId())) {
+            cachedRows = serviceHistoryRepository.findAllByCarOrderByDoneDateDescIdDesc(car);
+            if (!cachedRows.isEmpty()) {
+                return buildResponse(vin, CACHE_SOURCE, cachedRows, acceptLanguage);
+            }
 
-        List<ServiceHistory> persisted = persistHyperRows(car, hyperResponse.getServiceHistory());
+            HyperVehicleByVinResponse hyperResponse = fetchHyperHistory(vin);
+            if (hyperResponse == null || hyperResponse.getServiceHistory() == null || hyperResponse.getServiceHistory().isEmpty()) {
+                return buildResponse(vin, HYPERSERVICE_SOURCE, Collections.emptyList(), acceptLanguage);
+            }
+
+            List<ServiceHistory> persisted = persistHyperRows(car, hyperResponse.getServiceHistory());
+            return buildResponse(vin, HYPERSERVICE_SOURCE, persisted, acceptLanguage);
+        }
+    }
+
+    private CarVinServiceHistoryResponse buildResponse(String vin, String source, List<ServiceHistory> rows, String acceptLanguage) {
         return CarVinServiceHistoryResponse.builder()
                 .vin(vin)
-                .source(HYPERSERVICE_SOURCE)
-                .items(persisted.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
+                .source(source)
+                .items(rows.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
                 .build();
+    }
+
+    private Object lockForCar(Long carId) {
+        return CAR_PERSIST_LOCKS.computeIfAbsent(carId, id -> new Object());
     }
 
     private HyperVehicleByVinResponse fetchHyperHistory(String vin) {
@@ -117,8 +128,34 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
 
     private List<ServiceHistory> persistHyperRows(Car car, List<HyperServiceHistoryItemResponse> items) {
         List<ServiceHistory> persisted = new ArrayList<>();
+        Set<String> seenInBatch = new HashSet<>();
+
         for (HyperServiceHistoryItemResponse item : items) {
+            String batchKey = hyperItemKey(item);
+            if (!seenInBatch.add(batchKey)) {
+                log.info("Skipping duplicate Hyper item in same response for carId={}: {}", car.getCarId(), batchKey);
+                continue;
+            }
+
             List<String> groups = item.getServiceGroups() == null ? Collections.emptyList() : item.getServiceGroups();
+            BigDecimal serviceAmount = item.getFinalCost() != null ? item.getFinalCost().getAmount() : null;
+
+            Optional<ServiceHistory> existing = serviceHistoryRepository
+                    .findByCarAndServiceNameAndDoneDateAndDoneKmAndDealerAndServiceAmountAndSource(
+                            car,
+                            item.getServiceType(),
+                            item.getLastServiceDate(),
+                            item.getLastServiceMileage(),
+                            item.getDealer(),
+                            serviceAmount,
+                            HYPERSERVICE_SOURCE
+                    );
+
+            if (existing.isPresent()) {
+                log.info("Skipping duplicate Hyper service history for carId={}: {}", car.getCarId(), batchKey);
+                persisted.add(existing.get());
+                continue;
+            }
 
             ServiceHistory history = ServiceHistory.builder()
                     .car(car)
@@ -127,7 +164,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
                     .doneDate(item.getLastServiceDate())
                     .doneKm(item.getLastServiceMileage())
                     .serviceCenter(null)
-                    .serviceAmount(item.getFinalCost() != null ? item.getFinalCost().getAmount() : null)
+                    .serviceAmount(serviceAmount)
                     .dealer(item.getDealer())
                     .nextServiceDate(item.getNextServiceDate())
                     .nextServiceMileage(item.getNextServiceMileage())
@@ -143,6 +180,17 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
                 .sorted(Comparator.comparing(ServiceHistory::getDoneDate, Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(ServiceHistory::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
+    }
+
+    private String hyperItemKey(HyperServiceHistoryItemResponse item) {
+        BigDecimal amount = item.getFinalCost() != null ? item.getFinalCost().getAmount() : null;
+        return String.join("|",
+                Objects.toString(item.getServiceType(), ""),
+                Objects.toString(item.getLastServiceDate(), ""),
+                Objects.toString(item.getLastServiceMileage(), ""),
+                Objects.toString(item.getDealer(), ""),
+                Objects.toString(amount, "")
+        );
     }
 
     private void persistParts(ServiceHistory serviceHistory, List<HyperServicePartResponse> parts) {
