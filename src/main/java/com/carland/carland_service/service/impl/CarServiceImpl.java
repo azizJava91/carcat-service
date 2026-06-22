@@ -222,34 +222,6 @@ public class CarServiceImpl implements CarService {
         log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
 
 
-//        List<String> serviceOrder = List.of(
-//                "Engine oil and oil filter",
-//                "Cabin filter",
-//                "Air filter",
-//                "Fuel filter",
-//                "Spark plugs",
-//                "Coolant",
-//                "Engine timing belt & kit",
-//                "Brake fluid",
-//                "Automatic transmission fluid",
-//                "Auxiliary drive belt (FEAD)"
-//        );
-//
-//        Map<String, Integer> serviceOrderMap = new HashMap<>();
-//        for (int i = 0; i < serviceOrder.size(); i++) {
-//            serviceOrderMap.put(serviceOrder.get(i), i);
-//        }
-
-//        return customerServiceRecordList.stream()
-//                .sorted(Comparator.comparingInt(record -> serviceOrderMap.getOrDefault(record.getServiceName(), Integer.MAX_VALUE)))
-//                .map(record -> RecordResponse.builder()
-//                        .id(record.getId())
-//                        .serviceName(ServiceNameAz.translate(record.getServiceName(), acceptLanguage))
-//                        .actionType(record.getActionType())
-//                        .doneDate(record.getDoneDate())
-//                        .doneKm(record.getDoneKm())
-//                        .build())
-//                .toList();
         List<RecordResponse> responses = customerServiceRecordList.stream()
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
@@ -1030,9 +1002,10 @@ public class CarServiceImpl implements CarService {
                     .actionType(serviceEntity.getActionType())
                     .car(newCar)
                     .build();
+            log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+            log.info("[addCar] customerServiceRecordRepository.save  serviceName={}", customerServiceRecord.getServiceName());
+            log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
 
-            log.info("[addCar] customerServiceRecordRepository.save | carId={}, serviceName={}",
-                    newCar.getCarId(), customerServiceRecord.getServiceName());
             customerServiceRecordRepository.save(customerServiceRecord);
         }
         log.info("[addCar] PASS all service records created");
