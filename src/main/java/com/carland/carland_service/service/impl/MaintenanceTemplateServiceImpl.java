@@ -104,7 +104,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
-        if( request.getIntervalKm() == null && request.getIntervalMonth() == null){
+        if (request.getIntervalKm() == null && request.getIntervalMonth() == null) {
             throw new MissingFieldException("zaman ve km intervallarinin en azi biri daxil edilmelidir");
         }
 //        if (!phoneNumber.equals(superAdminPhoneNumber) || !role.equals(EnumUserRoles.BOSS.name()) || !userIdHeader.equals("1")) {
@@ -138,7 +138,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
         serviceEntityRepository.save(newService);
         maintenanceTemplateRepository.save(template);
 
-        List<ServiceResponse> responses = template.getServices().stream().map(this::convert).toList();
+        List<ServiceResponse> responses = template.getServices().stream().map(s-> convert(s,acceptLanguage)).toList();
         MaintenanceTemplateResponse response = convert(template, acceptLanguage);
         response.setServiceResponseList(responses);
 
@@ -154,14 +154,23 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 .engineType(engineType.getEngineType())
                 .engineTypeId(engineType.getEngineTypeId())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
-                .serviceResponseList(template.getServices().stream().map(this::convert).toList())
+                .serviceResponseList(template.getServices().stream().map(service -> convert(service, acceptLanguage)).toList())
                 .build();
     }
 
-    private ServiceResponse convert(ServiceEntity service) {
+    private ServiceResponse convert(ServiceEntity service, String acceptLanguage) {
+
+
+
+        String serviceNameTranslated = switch (acceptLanguage) {
+            case "az" -> service.getNameAz();
+            case "ru" -> service.getNameRu();
+            default -> service.getNameEn();
+        };
+
         return ServiceResponse.builder()
                 .id(service.getId())
-                .serviceName(service.getServiceName())
+                .serviceName(serviceNameTranslated)
                 .actionType(service.getActionType())
                 .nameAz(service.getNameAz())
                 .nameEn(service.getNameEn())
