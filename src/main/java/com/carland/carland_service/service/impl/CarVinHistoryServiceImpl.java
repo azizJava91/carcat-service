@@ -12,6 +12,7 @@ import com.carland.carland_service.entity.ServiceHistory;
 import com.carland.carland_service.entity.ServiceHistoryPart;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
 import com.carland.carland_service.enums.EnumUserStatus;
+import com.carland.carland_service.enums.ServiceTypeTranslation;
 import com.carland.carland_service.exceptions.MissingFieldException;
 import com.carland.carland_service.exceptions.ResourceNotFoundException;
 import com.carland.carland_service.exceptions.UserNotFoundException;
@@ -72,7 +73,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
             return CarVinServiceHistoryResponse.builder()
                     .vin(vin)
                     .source(CACHE_SOURCE)
-                    .items(existingRows.stream().map(this::mapServiceHistory).toList())
+                    .items(existingRows.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
                     .build();
         }
 
@@ -89,7 +90,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
         return CarVinServiceHistoryResponse.builder()
                 .vin(vin)
                 .source(HYPERSERVICE_SOURCE)
-                .items(persisted.stream().map(this::mapServiceHistory).toList())
+                .items(persisted.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
                 .build();
     }
 
@@ -164,7 +165,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
         serviceHistoryPartRepository.saveAll(entities);
     }
 
-    private ServiceHistoryItemResponse mapServiceHistory(ServiceHistory history) {
+    private ServiceHistoryItemResponse mapServiceHistory(ServiceHistory history, String acceptLanguage) {
         List<ServiceHistoryPartResponse> parts = history.getId() == null
                 ? Collections.emptyList()
                 : serviceHistoryPartRepository.findAllByServiceHistory(history).stream()
@@ -178,10 +179,14 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
                         .build())
                 .toList();
 
+        List<String> actionType = history.getActionType() == null
+                ? Collections.emptyList()
+                : ServiceTypeTranslation.translateList(history.getActionType(), acceptLanguage);
+
         return ServiceHistoryItemResponse.builder()
                 .id(history.getId())
-                .serviceName(history.getServiceName())
-                .actionType(history.getActionType() == null ? Collections.emptyList() : history.getActionType())
+                .serviceName(ServiceTypeTranslation.translate(history.getServiceName(), acceptLanguage))
+                .actionType(actionType)
                 .doneDate(history.getDoneDate())
                 .doneKM(history.getDoneKm())
                 .serviceCenter(history.getServiceCenter())
