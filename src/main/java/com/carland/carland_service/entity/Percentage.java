@@ -21,6 +21,8 @@ public class Percentage {
     Long id;
     String serviceName;
     String actionType;
+    String serviceNameRu;
+    String serviceNameAz;
 
     Long intervalKm;
     Integer intervalMonth;
@@ -48,4 +50,6 @@ public class Percentage {
     Long carId;
 
     LocalDateTime lastNotificationSentAt;
+
+
 }

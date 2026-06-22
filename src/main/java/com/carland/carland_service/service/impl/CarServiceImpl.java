@@ -492,12 +492,17 @@ public class CarServiceImpl implements CarService {
                 }
 
                 responseList.add(
+
                         CarServicePercentageResponse.builder()
                                 .percentageId(percentage.getId())
-                                .serviceName(ServiceNameAz.translate(percentage.getServiceName(), acceptLanguage))
+                                .serviceName(switch (acceptLanguage){
+                                    case "az" -> percentage.getServiceNameAz();
+                                    case "ru" -> percentage.getServiceNameRu();
+                                    default -> percentage.getServiceName();
+                                })
                                 .actionType(percentage.getActionType())
-                                .intervalKm(percentage.getIntervalKm())          // bilincli olarak null
-                                .intervalMonth(percentage.getIntervalMonth())       // bilincli olarak null
+                                .intervalKm(percentage.getIntervalKm())
+                                .intervalMonth(percentage.getIntervalMonth())
                                 .kmPercentage(kmPercentage)
                                 .monthPercentageDigit(monthPercentageDigit)
                                 .remainingKm(remainingKm)
@@ -944,6 +949,8 @@ public class CarServiceImpl implements CarService {
                     .intervalKm(serviceEntity.getIntervalKm())
                     .intervalMonth(serviceEntity.getIntervalMonth())
                     .serviceName(serviceEntity.getServiceName())
+                    .serviceNameAz(serviceEntity.getNameAz())
+                    .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
                     .carId(newCar.getCarId())
                     .build();
