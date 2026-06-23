@@ -139,9 +139,11 @@ public class CarServiceImpl implements CarService {
                         .filter(et -> et.getEngineType().equalsIgnoreCase(engineType))
                         .map(EngineType::getEngineTypeId)
                         .findFirst()
-                        .orElse(null);
+                        .orElseGet(() -> {
+                            log.info("decoder engine type id bizim bazadaki ile uyusmadi");
+                            return null;
+                        });
             }
-
             return CarResponse.builder()
                     .vin(vin)
                     .brand(brand)
