@@ -31,4 +31,5 @@ public class CarResponse {
     private String message;
     private List<String> vinProvidedFields;
     private String resource;
+    private Long engineTypeId;
 }

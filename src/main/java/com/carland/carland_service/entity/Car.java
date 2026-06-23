@@ -38,6 +38,7 @@ public class Car {
     private Integer modelYear;
     private Long colorId;
     private String engineType;
+    private Long engineTypeId;
     private Integer engineVolume;
     private String transmissionType;
     private String bodyType;
