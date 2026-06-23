@@ -76,7 +76,12 @@ public class CarServiceImpl implements CarService {
                     .bodyType(carFromDb != null ? carFromDb.getBodyType() : null)
                     .transmissionType(carFromDb != null ? carFromDb.getTransmissionType() : null)
                     .engineVolume(carFromDb != null ? carFromDb.getEngineVolume() : null)
-                    .engineType(carFromDb != null ? carFromDb.getEngineType() : null)
+                    .engineType(
+                            EngineTypeTranslation.translate(
+                                    carFromDb.getEngineType(),
+                                    acceptLanguage
+                            )
+                    )
                     .vinProvidedFields(vinProvidedFields)
                     .resource("fromDb")
                     .plateNumber(carFromDb != null ? carFromDb.getPlateNumber() : null)
@@ -1319,7 +1324,8 @@ public class CarServiceImpl implements CarService {
                                 car.getEngineType(),
                                 acceptLanguage
                         )
-                )                .engineVolume(car.getEngineVolume())
+                )
+                .engineVolume(car.getEngineVolume())
                 .engineTypeId(car.getEngineTypeId())
                 .transmissionType(car.getTransmissionType())
                 .mileage(car.getMileage())
