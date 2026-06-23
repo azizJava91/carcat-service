@@ -609,26 +609,32 @@ public class CarServiceImpl implements CarService {
     public CarServicePercentageResponse editPercentage(PercentageRequest request, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage) {
 
         if (request == null || request.getCarId() == null || request.getPercentageId() == null || phoneNumber == null || userIdHeader == null) {
+            log.error("missing body var");
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
-        Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(
-                Long.valueOf(userIdHeader), phoneNumber, EnumUserStatus.ACTIVE.name());
+        Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(Long.valueOf(userIdHeader),
+                phoneNumber, EnumUserStatus.ACTIVE.name());
 
         if (customer == null) {
+            log.error("customer null");
             throw new UserNotFoundException(EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         Car car = carRepository.findByCarIdAndCustomer(request.getCarId(), customer);
 
         if (car == null) {
+            log.error("car null");
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         Percentage percentage = percentageRepository.findById(request.getPercentageId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hesablama tapilmadi"));
-
+                .orElseThrow(() -> {
+                    log.error("Percentage tapılmadı. ID: {}", request.getPercentageId());
+                    return new ResourceNotFoundException("Hesablama tapilmadi");
+                });
         if (!percentage.getCarId().equals(car.getCarId())) {
+            log.error("Hesablama bu avtomobile aid deyil");
             throw new ResourceNotFoundException("Hesablama bu avtomobile aid deyil");
         }
 
@@ -650,7 +656,7 @@ public class CarServiceImpl implements CarService {
 
         percentageRepository.save(percentage);
 
-        return CarServicePercentageResponse.builder()
+        CarServicePercentageResponse response = CarServicePercentageResponse.builder()
                 .percentageId(percentage.getId())
                 .serviceName(switch (acceptLanguage) {
                     case "az" -> percentage.getServiceNameAz();
@@ -673,6 +679,8 @@ public class CarServiceImpl implements CarService {
                 .nextServiceKm(percentage.getNextServiceKm())
                 .nextServiceDate(percentage.getNextServiceDate().format(formatter))
                 .build();
+        log.info("response: {}", response);
+        return response;
     }
 
 
