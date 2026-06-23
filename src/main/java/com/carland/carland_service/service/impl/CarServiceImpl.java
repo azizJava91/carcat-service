@@ -6,6 +6,7 @@ import com.carland.carland_service.dto.request.RecordRequest;
 import com.carland.carland_service.dto.response.*;
 import com.carland.carland_service.entity.*;
 import com.carland.carland_service.enums.ColorTranslation;
+import com.carland.carland_service.enums.EngineTypeTranslation;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
 import com.carland.carland_service.enums.EnumUserStatus;
 import com.carland.carland_service.exceptions.*;
@@ -1311,8 +1312,12 @@ public class CarServiceImpl implements CarService {
                 .model(car.getModel())
                 .modelYear(car.getModelYear())
                 .color(colorResponse)
-                .engineType(car.getEngineType())
-                .engineVolume(car.getEngineVolume())
+                .engineType(
+                        EngineTypeTranslation.translate(
+                                car.getEngineType(),
+                                acceptLanguage
+                        )
+                )                .engineVolume(car.getEngineVolume())
                 .transmissionType(car.getTransmissionType())
                 .mileage(car.getMileage())
                 .updatedAt(car.getUpdatedAt())

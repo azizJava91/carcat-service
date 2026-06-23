@@ -84,14 +84,10 @@ private final ModelYearRepository modelYearRepository;
     @Override
     public List<EngineType> getEngineTypes(String timezone, String acceptLanguage) {
 
-        List<EngineType> engineTypes =
-                engineTypeRepository.findAllByStatusOrderByEngineTypeIdAsc("ACTIVE");
+        List<EngineType> engineTypes = engineTypeRepository.findAllByStatusOrderByEngineTypeIdAsc("ACTIVE");
 
         if (engineTypes.isEmpty()) {
-            throw new ResourceNotFoundException(
-                    EnumMessagesLangValues.ENGINE_TYPE_NOT_FOUND
-                            .getMessageByLang(acceptLanguage)
-            );
+            throw new ResourceNotFoundException(EnumMessagesLangValues.ENGINE_TYPE_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         if ("az".equalsIgnoreCase(acceptLanguage)) {
