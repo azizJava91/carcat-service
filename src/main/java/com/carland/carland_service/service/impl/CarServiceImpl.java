@@ -128,7 +128,19 @@ public class CarServiceImpl implements CarService {
             }
 
             String engineType = decodeVin.get("engineType");
-            if (hasValue(engineType)) vinProvidedFields.add("engineType");
+
+            Long engineTypeId = null;
+
+            if (hasValue(engineType)) {
+                vinProvidedFields.add("engineType");
+
+                engineTypeId = engineTypeRepository.findAll()
+                        .stream()
+                        .filter(et -> et.getEngineType().equalsIgnoreCase(engineType))
+                        .map(EngineType::getEngineTypeId)
+                        .findFirst()
+                        .orElse(null);
+            }
 
             return CarResponse.builder()
                     .vin(vin)
@@ -139,6 +151,7 @@ public class CarServiceImpl implements CarService {
                     .transmissionType(transmissionType)
                     .engineVolume(engineVolume)
                     .engineType(engineType)
+                    .engineTypeId(engineTypeId)
                     .vinProvidedFields(vinProvidedFields)
                     .resource("fromDecoderTool")
                     .build();
