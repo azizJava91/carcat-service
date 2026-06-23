@@ -18,6 +18,8 @@ public class CustomerServiceRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String serviceName;
+    String serviceNameAz;
+    String serviceNameRu;
     String actionType;
     LocalDate doneDate;
     Integer doneKm;

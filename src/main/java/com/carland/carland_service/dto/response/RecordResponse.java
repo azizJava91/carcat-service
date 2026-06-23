@@ -16,6 +16,8 @@ public class RecordResponse {
 
     Long id;
     String serviceName;
+    String serviceNameAz;
+    String serviceNameRu;
     String actionType;
     LocalDate doneDate;
     Integer doneKm;

@@ -226,6 +226,8 @@ public class CarServiceImpl implements CarService {
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
                         .serviceName(ServiceNameAz.translate(record.getServiceName(), acceptLanguage))
+                        .serviceNameAz(record.getServiceNameAz())
+                        .serviceNameRu(record.getServiceNameRu())
                         .actionType(record.getActionType())
                         .doneDate(record.getDoneDate())
                         .doneKm(record.getDoneKm())
@@ -1007,6 +1009,8 @@ public class CarServiceImpl implements CarService {
 
             CustomerServiceRecord customerServiceRecord = CustomerServiceRecord.builder()
                     .serviceName(serviceEntity.getServiceName())
+                    .serviceNameAz(serviceEntity.getNameAz())
+                    .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
                     .car(newCar)
                     .build();
@@ -1286,6 +1290,8 @@ public class CarServiceImpl implements CarService {
         return RecordResponse.builder()
                 .id(record.getId())
                 .serviceName(record.getServiceName())
+                .serviceNameAz(record.getServiceNameAz())
+                .serviceNameRu(record.getServiceNameRu())
                 .actionType(record.getActionType())
                 .doneDate(record.getDoneDate())
                 .doneKm(record.getDoneKm())
