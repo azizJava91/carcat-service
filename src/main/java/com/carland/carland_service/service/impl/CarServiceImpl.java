@@ -8,7 +8,6 @@ import com.carland.carland_service.entity.*;
 import com.carland.carland_service.enums.ColorTranslation;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
 import com.carland.carland_service.enums.EnumUserStatus;
-import com.carland.carland_service.enums.ServiceNameAz;
 import com.carland.carland_service.exceptions.*;
 import com.carland.carland_service.repository.*;
 import com.carland.carland_service.service.interfaces.CarService;
@@ -225,7 +224,7 @@ public class CarServiceImpl implements CarService {
         List<RecordResponse> responses = customerServiceRecordList.stream()
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
-                        .serviceName(ServiceNameAz.translate(record.getServiceName(), acceptLanguage))
+                        .serviceName(record.getServiceName())
                         .serviceNameAz(record.getServiceNameAz())
                         .serviceNameRu(record.getServiceNameRu())
                         .actionType(record.getActionType())
@@ -1386,7 +1385,7 @@ public class CarServiceImpl implements CarService {
 
     private String[] buildMessage(Percentage percentage, String lang) {
         // ---------------- Service Name ----------------
-        String serviceNameTranslated = ServiceNameAz.translate(percentage.getServiceName(), lang);
+//        String serviceNameTranslated = ServiceNameAz.translate(percentage.getServiceName(), lang);
 
         // ---------------- Threshold türünü seç (en düşük olan) ----------------
         Integer km = percentage.getKmPercentage();
@@ -1426,27 +1425,27 @@ public class CarServiceImpl implements CarService {
 
         // ---------------- MESAJ OLUŞTUR ----------------
         if ("az".equalsIgnoreCase(lang)) {
-            title = serviceNameTranslated + " vaxtı yaxınlaşır🛞";
+            title = percentage.getServiceNameAz() + " vaxtı yaxınlaşır🛞";
 
             if (isKmBased) {
-                body = "Avtomobilinizin " + serviceNameTranslated
+                body = "Avtomobilinizin " + percentage.getServiceNameAz()
                         + " üçün " + percentage.getRemainingKm()
                         + " km qalıb. Zəhmət olmasa baxımı planlayın😀";
             } else {
-                body = "Avtomobilinizin " + serviceNameTranslated
+                body = "Avtomobilinizin " + percentage.getServiceNameAz()
                         + " üçün " + remainingDays
                         + " gün qalıb. Zəhmət olmasa baxımı planlayın😀";
             }
 
         } else { // default en
-            title = serviceNameTranslated + " reminder 🛞";
+            title = percentage.getServiceName() + " reminder 🛞";
 
             if (isKmBased) {
-                body = "Your car’s " + serviceNameTranslated
+                body = "Your car’s " + percentage.getServiceName()
                         + " is due in " + percentage.getRemainingKm()
                         + " km. Please schedule your maintenance 😀";
             } else {
-                body = "Your car’s " + serviceNameTranslated
+                body = "Your car’s " + percentage.getServiceName()
                         + " is due in " + remainingDays
                         + " days. Please schedule your maintenance 😀";
             }

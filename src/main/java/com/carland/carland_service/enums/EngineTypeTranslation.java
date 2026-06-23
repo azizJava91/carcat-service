@@ -13,7 +13,6 @@ public enum EngineTypeTranslation {
     PLUG_IN_HYBRID("Plug-in Hybrid", "Plug-in Hibrid"),
     ELECTRIC("Electric", "Elektro"),
     GAS_LPG_CNG("Gas (LPG / CNG)", "Qaz"),
-    HYDROGEN("Hydrogen", "Hidrogen"),
     DIESEL_HYBRID("Diesel Hybrid", "Dizel-Hibrid");
 
     private final String en;
