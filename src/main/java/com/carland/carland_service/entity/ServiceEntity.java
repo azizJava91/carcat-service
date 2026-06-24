@@ -29,7 +29,9 @@ public class ServiceEntity {
 
     Long intervalKm;//    standard interval km
 
-    Integer intervalMonth;//    standard interval time
+    Integer intervalMonth;  //    standard interval time
+
+    boolean important;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
