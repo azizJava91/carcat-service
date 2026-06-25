@@ -31,7 +31,7 @@ public class ServiceEntity {
 
     Integer intervalMonth;  //    standard interval time
 
-//    boolean important;
+    boolean important;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
