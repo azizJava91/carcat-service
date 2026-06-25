@@ -177,6 +177,7 @@ public class MaintenanceTemplateServiceImpl implements MaintenanceTemplateServic
                 .nameRu(service.getNameRu())
                 .intervalMonth(service.getIntervalMonth())
                 .intervalKm(service.getIntervalKm())
+                .important(service.isImportant())
                 .build();
     }
 }

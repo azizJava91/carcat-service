@@ -19,4 +19,5 @@ public class ServiceResponse {
     String nameAz;//    name_az
     String nameEn;//    name_en
     String nameRu;//    name_ru
+    boolean important;
 }
