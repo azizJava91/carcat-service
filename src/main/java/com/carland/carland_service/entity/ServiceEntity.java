@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Data
@@ -31,7 +32,9 @@ public class ServiceEntity {
 
     Integer intervalMonth;  //    standard interval time
 
-    boolean important;
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private boolean important;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
