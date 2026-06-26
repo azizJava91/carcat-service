@@ -1256,37 +1256,47 @@ public class CarServiceImpl implements CarService {
 
         if (request == null || request.getCarId() == null || request.getRecordId() == null || phoneNumber == null
                 || userIdHeader == null) {
+            log.info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+            log.info("Request body xeta verdi");
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
         Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(Long.valueOf(userIdHeader), phoneNumber,
                 EnumUserStatus.ACTIVE.name());
 
         if (customer == null) {
+            log.info("Customer null oldu");
             throw new UserNotFoundException(EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         Car car = carRepository.findByCarIdAndCustomer(request.getCarId(), customer);
 
         if (car == null) {
+            log.info("Car null oldu");
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         CustomerServiceRecord record = customerServiceRecordRepository.findByIdAndCar(request.getRecordId(), car);
 
         if (record == null) {
+            log.info("Record null oldu");
             throw new ResourceNotFoundException(EnumMessagesLangValues.RECORD_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
         if (request.getDoneDate() != null) {
             record.setDoneDate(request.getDoneDate());
+            log.info("Request done date null deyil ve set olundu");
         }
 
         if (request.getDoneKm() != null) {
             record.setDoneKm(request.getDoneKm());
+            log.info("Request done km null deyil ve set olundu");
+
         }
         record.setServicedStatus(request.getServicedStatus());
-
+        log.info("Request.getServicedStatus budur : {}", request.getServicedStatus());
         customerServiceRecordRepository.save(record);
+        log.info("Record yekun olaraq budur: -----------------> {}", record);
+        log.info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
 
         return RecordResponse.builder()
                 .servicedStatus(record.getServicedStatus())
