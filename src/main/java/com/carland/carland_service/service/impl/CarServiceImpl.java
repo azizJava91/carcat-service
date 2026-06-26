@@ -1253,7 +1253,8 @@ public class CarServiceImpl implements CarService {
     @Override
     public RecordResponse updateRecord(RecordRequest request, String phoneNumber, String userIdHeader,
                                        String timezone, String acceptLanguage) {
-
+        log.info("basladi  WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+        log.info("Request :  {}", request);
         if (request == null || request.getCarId() == null || request.getRecordId() == null || phoneNumber == null
                 || userIdHeader == null) {
             log.info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
@@ -1276,7 +1277,7 @@ public class CarServiceImpl implements CarService {
         }
 
         CustomerServiceRecord record = customerServiceRecordRepository.findByIdAndCar(request.getRecordId(), car);
-
+        log.info("Bazadan gelen record budur: {}", record);
         if (record == null) {
             log.info("Record null oldu");
             throw new ResourceNotFoundException(EnumMessagesLangValues.RECORD_NOT_FOUND.getMessageByLang(acceptLanguage));
