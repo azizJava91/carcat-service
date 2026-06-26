@@ -13,7 +13,9 @@ import com.carland.carland_service.repository.CustomerRepository;
 import com.carland.carland_service.repository.MaintenanceTemplateRepository;
 import com.carland.carland_service.service.impl.HyperTokenService;
 import com.carland.carland_service.service.interfaces.CarService;
+import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
 import com.carland.carland_service.service.interfaces.CarVinHistoryService;
+import com.carland.carland_service.dto.response.v2.CarVinHistoryServiceV2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ public class CarController {
 
     private final CarService carService;
     private final CarVinHistoryService carVinHistoryService;
+    private final CarVinHistoryServiceV2 carVinHistoryServiceV2;
     private final MaintenanceTemplateRepository maintenanceTemplateRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -203,6 +206,15 @@ public class CarController {
                                                                 @RequestHeader("Accept-Language") String acceptLanguage) {
         return carVinHistoryService.getServiceHistoryByVin(vin, phoneNumber, userIdHeader, acceptLanguage);
     }
+
+    @GetMapping("/{vin}/service-history/v2")
+    public CarVinServiceHistoryV2Response getServiceHistoryByVinV2(@PathVariable String vin,
+                                                                   @RequestHeader("phoneNumber") String phoneNumber,
+                                                                   @RequestHeader("X-User-Id") String userIdHeader,
+                                                                   @RequestHeader("Accept-Language") String acceptLanguage) {
+        return carVinHistoryServiceV2.getServiceHistoryByVin(vin, phoneNumber, userIdHeader, acceptLanguage);
+    }
+
 
     @PostMapping("/remove/simulated/customer")
     @Transactional

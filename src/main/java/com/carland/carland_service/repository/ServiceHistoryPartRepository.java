@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface ServiceHistoryPartRepository extends JpaRepository<ServiceHistoryPart, Long> {
     List<ServiceHistoryPart> findAllByServiceHistory(ServiceHistory serviceHistory);
-    void deleteByServiceHistory(ServiceHistory serviceHistory);
 }

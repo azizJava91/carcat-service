@@ -1,4 +1,4 @@
-package com.carland.carland_service.dto.response;
+package com.carland.carland_service.dto.response.v2;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

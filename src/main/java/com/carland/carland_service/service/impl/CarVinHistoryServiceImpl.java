@@ -93,6 +93,8 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
         }
     }
 
+
+
     private CarVinServiceHistoryResponse buildResponse(String vin, String source, List<ServiceHistory> rows, String acceptLanguage) {
         return CarVinServiceHistoryResponse.builder()
                 .vin(vin)

@@ -1,0 +1,1677 @@
+{
+    "plate": "99-FH-032",
+    "vin": "3FA6P0HDXKR168752",
+    "brand": "Ford",
+    "model": "Fusion",
+    "year": 2019,
+    "engineVolume": 1.5,
+    "engineType": null,
+    "bodyType": null,
+    "trim": null,
+    "currentMileage": 121000,
+    "serviceHistory": [
+        {
+            "recordId": 19387,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Salon xidməti",
+                "Diaqnostika xidməti",
+                "Maye xidməti",
+                "Təkər xidməti",
+                "Asqı xidməti"
+            ],
+            "lastServiceDate": "2026-05-25",
+            "lastServiceMileage": 121000,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1795,
+                    "serviceName": "EXTRA Mühərrik bölməsinin köpüklə təmizlənməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1800,
+                    "serviceName": "EXTRA Mühərrikin endoskopla yoxlanılması",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1798,
+                    "serviceName": "EXTRA Salonun ozonla təmizlənməsi (8-10 dəq.)",
+                    "serviceGroups": [
+                        "Salon xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1796,
+                    "serviceName": "EXTRA Elektrik diaqnostika",
+                    "serviceGroups": [
+                        "Diaqnostika xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1797,
+                    "serviceName": "EXTRA Bütün mayelərin səviyyə və keyfiyyətinə nəzarət",
+                    "serviceGroups": [
+                        "Maye xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1799,
+                    "serviceName": "EXTRA Təkərlərin azotla doldurulması",
+                    "serviceGroups": [
+                        "Təkər xidməti"
+                    ],
+                    "universalServiceId": "Tires",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1793,
+                    "serviceName": "EXTRA Asqı sisteminin yoxlanılması",
+                    "serviceGroups": [
+                        "Asqı xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 0.8,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 47.4,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 47.4,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 18660,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2026-05-05",
+            "lastServiceMileage": 96079,
+            "services": [],
+            "parts": [
+                {
+                    "name": "5W-30",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 25,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 25,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 18672,
+            "serviceType": "Rəngsaz xidməti",
+            "serviceGroups": [
+                "Rəngsaz xidməti"
+            ],
+            "lastServiceDate": "2026-05-05",
+            "lastServiceMileage": 96079,
+            "services": [
+                {
+                    "serviceCode": 339,
+                    "serviceName": "Rəngsaz xidməti",
+                    "serviceGroups": [
+                        "Rəngsaz xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 20,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": null
+        },
+        {
+            "recordId": 18632,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2026-05-04",
+            "lastServiceMileage": 96079,
+            "services": [],
+            "parts": [],
+            "cost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 18223,
+            "serviceType": "Cilalama xidməti",
+            "serviceGroups": [
+                "Cilalama xidməti"
+            ],
+            "lastServiceDate": "2026-04-22",
+            "lastServiceMileage": 96079,
+            "services": [
+                {
+                    "serviceCode": 356,
+                    "serviceName": "Cilalanma xidməti",
+                    "serviceGroups": [
+                        "Cilalama xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 80,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 80,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 80,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": null
+        },
+        {
+            "recordId": 16234,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2026-02-19",
+            "lastServiceMileage": 116295,
+            "services": [],
+            "parts": [
+                {
+                    "name": "PremiumR510 600 ml",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 10,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 10,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 15572,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Salon xidməti",
+                "Diaqnostika xidməti",
+                "Maye xidməti",
+                "Təkər xidməti",
+                "Asqı xidməti"
+            ],
+            "lastServiceDate": "2026-01-29",
+            "lastServiceMileage": 116295,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1795,
+                    "serviceName": "EXTRA Mühərrik bölməsinin köpüklə təmizlənməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1800,
+                    "serviceName": "EXTRA Mühərrikin endoskopla yoxlanılması",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1798,
+                    "serviceName": "EXTRA Salonun ozonla təmizlənməsi (8-10 dəq.)",
+                    "serviceGroups": [
+                        "Salon xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1796,
+                    "serviceName": "EXTRA Elektrik diaqnostika",
+                    "serviceGroups": [
+                        "Diaqnostika xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1797,
+                    "serviceName": "EXTRA Bütün mayelərin səviyyə və keyfiyyətinə nəzarət",
+                    "serviceGroups": [
+                        "Maye xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1799,
+                    "serviceName": "EXTRA Təkərlərin azotla doldurulması",
+                    "serviceGroups": [
+                        "Təkər xidməti"
+                    ],
+                    "universalServiceId": "Tires",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1793,
+                    "serviceName": "EXTRA Asqı sisteminin yoxlanılması",
+                    "serviceGroups": [
+                        "Asqı xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 2,
+                    "unit": null
+                },
+                {
+                    "name": "2347700",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 35,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 35,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 13998,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2025-12-05",
+            "lastServiceMileage": 104652,
+            "services": [],
+            "parts": [
+                {
+                    "name": "235/45ZR18",
+                    "qty": 4,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 388,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 388,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 12989,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Salon xidməti",
+                "Diaqnostika xidməti",
+                "Maye xidməti",
+                "Təkər xidməti",
+                "Asqı xidməti"
+            ],
+            "lastServiceDate": "2025-10-29",
+            "lastServiceMileage": 111037,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1795,
+                    "serviceName": "EXTRA Mühərrik bölməsinin köpüklə təmizlənməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1800,
+                    "serviceName": "EXTRA Mühərrikin endoskopla yoxlanılması",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1798,
+                    "serviceName": "EXTRA Salonun ozonla təmizlənməsi (8-10 dəq.)",
+                    "serviceGroups": [
+                        "Salon xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1796,
+                    "serviceName": "EXTRA Elektrik diaqnostika",
+                    "serviceGroups": [
+                        "Diaqnostika xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1797,
+                    "serviceName": "EXTRA Bütün mayelərin səviyyə və keyfiyyətinə nəzarət",
+                    "serviceGroups": [
+                        "Maye xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1799,
+                    "serviceName": "EXTRA Təkərlərin azotla doldurulması",
+                    "serviceGroups": [
+                        "Təkər xidməti"
+                    ],
+                    "universalServiceId": "Tires",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 1793,
+                    "serviceName": "EXTRA Asqı sisteminin yoxlanılması",
+                    "serviceGroups": [
+                        "Asqı xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "A0665",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 126,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 126,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 12845,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2025-10-23",
+            "lastServiceMileage": 104652,
+            "services": [],
+            "parts": [],
+            "cost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 12847,
+            "serviceType": "Çilingər xidməti",
+            "serviceGroups": [
+                "Çilingər xidməti"
+            ],
+            "lastServiceDate": "2025-10-23",
+            "lastServiceMileage": 104652,
+            "services": [
+                {
+                    "serviceCode": 387,
+                    "serviceName": "Çilingər xidməti",
+                    "serviceGroups": [
+                        "Çilingər xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 20,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 11797,
+            "serviceType": "Avto-yuma xidməti",
+            "serviceGroups": [
+                "Avto-yuma xidməti"
+            ],
+            "lastServiceDate": "2025-09-08",
+            "lastServiceMileage": 104652,
+            "services": [
+                {
+                    "serviceCode": 1018,
+                    "serviceName": "Çöl remen sökülüb yığılması/dəyişilməsi",
+                    "serviceGroups": [],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 6,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 782,
+                    "serviceName": "Avto Yuma",
+                    "serviceGroups": [
+                        "Avto-yuma xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 4,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 0.18,
+                    "unit": null
+                },
+                {
+                    "name": "5W-30",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "254113X600",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "CJ5Z10344A",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 88.9,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 108.9,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 11186,
+            "serviceType": "Avto-yuma xidməti",
+            "serviceGroups": [
+                "Avto-yuma xidməti"
+            ],
+            "lastServiceDate": "2025-08-14",
+            "lastServiceMileage": 104652,
+            "services": [
+                {
+                    "serviceCode": 346,
+                    "serviceName": "Avto yuma (sedan)",
+                    "serviceGroups": [
+                        "Avto-yuma xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 10,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 10,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 10,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 10808,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2025-08-01",
+            "lastServiceMileage": 104652,
+            "services": [],
+            "parts": [],
+            "cost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 10767,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Filtr xidməti",
+                "Çilingər xidməti",
+                "Avto-yuma xidməti"
+            ],
+            "lastServiceDate": "2025-07-30",
+            "lastServiceMileage": 104652,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 1.11,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 24,
+                    "serviceName": "Salon filtrinin dəyişdirilməsi (bəsit)",
+                    "serviceGroups": [
+                        "Filtr xidməti"
+                    ],
+                    "universalServiceId": "Cabin Filter",
+                    "cost": {
+                        "amount": 0.56,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 26,
+                    "serviceName": "Hava filtrinin dəyişdirilməsi (bəsit)",
+                    "serviceGroups": [
+                        "Filtr xidməti"
+                    ],
+                    "universalServiceId": "Air Filter",
+                    "cost": {
+                        "amount": 0.56,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 467,
+                    "serviceName": "Texniki baxış",
+                    "serviceGroups": [
+                        "Çilingər xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 1.67,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 782,
+                    "serviceName": "Avto Yuma",
+                    "serviceGroups": [
+                        "Avto-yuma xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 1.11,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "A0665",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "52610",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 95,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 125,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 10155,
+            "serviceType": "Balans xidməti",
+            "serviceGroups": [
+                "Balans xidməti"
+            ],
+            "lastServiceDate": "2025-07-11",
+            "lastServiceMileage": 97900,
+            "services": [
+                {
+                    "serviceCode": 233,
+                    "serviceName": "Balans R16-18",
+                    "serviceGroups": [
+                        "Balans xidməti"
+                    ],
+                    "universalServiceId": "Wheel Balancing",
+                    "cost": {
+                        "amount": 12,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 12,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 12,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 9309,
+            "serviceType": "Elektrik xidməti",
+            "serviceGroups": [
+                "Elektrik xidməti"
+            ],
+            "lastServiceDate": "2025-06-16",
+            "lastServiceMileage": 97900,
+            "services": [
+                {
+                    "serviceCode": 410,
+                    "serviceName": "Elektrik xidməti",
+                    "serviceGroups": [
+                        "Elektrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "BM5Z6C315A",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 93,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 98,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 8832,
+            "serviceType": "Çilingər xidməti",
+            "serviceGroups": [
+                "Çilingər xidməti"
+            ],
+            "lastServiceDate": "2025-05-31",
+            "lastServiceMileage": 97900,
+            "services": [
+                {
+                    "serviceCode": 467,
+                    "serviceName": "Texniki baxış",
+                    "serviceGroups": [
+                        "Çilingər xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 0,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 6796,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti"
+            ],
+            "lastServiceDate": "2025-03-07",
+            "lastServiceMileage": 97900,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 4,
+                    "unit": null
+                },
+                {
+                    "name": "A0665",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 84.8,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 84.8,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 6424,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2025-02-15",
+            "lastServiceMileage": 97900,
+            "services": [],
+            "parts": [
+                {
+                    "name": "1690470",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 40,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 40,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 5546,
+            "serviceType": "Diaqnostika xidməti",
+            "serviceGroups": [
+                "Diaqnostika xidməti",
+                "Elektrik xidməti"
+            ],
+            "lastServiceDate": "2024-12-30",
+            "lastServiceMileage": 96079,
+            "services": [
+                {
+                    "serviceCode": 59,
+                    "serviceName": "Elektron diaqnostika",
+                    "serviceGroups": [
+                        "Diaqnostika xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 417,
+                    "serviceName": "Lampa dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Elektrik xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 5,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "H8",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 20,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 4534,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Diaqnostika xidməti"
+            ],
+            "lastServiceDate": "2024-11-02",
+            "lastServiceMileage": 93409,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 59,
+                    "serviceName": "Elektron diaqnostika",
+                    "serviceGroups": [
+                        "Diaqnostika xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 90,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 100,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 3950,
+            "serviceType": "Çilingər xidməti",
+            "serviceGroups": [
+                "Çilingər xidməti"
+            ],
+            "lastServiceDate": "2024-09-24",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 655,
+                    "serviceName": "Əyləc bəndlərinin dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Çilingər xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 9,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "21551.12",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "DY-1268",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 142.65,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 157.5,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 3767,
+            "serviceType": "Çilingər xidməti",
+            "serviceGroups": [
+                "Çilingər xidməti"
+            ],
+            "lastServiceDate": "2024-09-10",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 655,
+                    "serviceName": "Əyləc bəndlərinin dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Çilingər xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 10,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "2124922",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 70,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 70,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 3197,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2024-08-03",
+            "lastServiceMileage": null,
+            "services": [],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "DS73-9601-AC",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "C114T",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 76,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 76,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 2722,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2024-07-04",
+            "lastServiceMileage": 0,
+            "services": [],
+            "parts": [
+                {
+                    "name": "75 AH EURO R+",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 119,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 119,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 2562,
+            "serviceType": "general_service",
+            "serviceGroups": [],
+            "lastServiceDate": "2024-06-25",
+            "lastServiceMileage": 0,
+            "services": [],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "DG9Z-2200-N",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 53,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 53,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 2330,
+            "serviceType": "Avto-yuma xidməti",
+            "serviceGroups": [
+                "Avto-yuma xidməti"
+            ],
+            "lastServiceDate": "2024-06-11",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 346,
+                    "serviceName": "Avto yuma (sedan)",
+                    "serviceGroups": [
+                        "Avto-yuma xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 5,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 5,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 5,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Multiservis"
+        },
+        {
+            "recordId": 1637,
+            "serviceType": "Avto-yuma xidməti",
+            "serviceGroups": [
+                "Avto-yuma xidməti"
+            ],
+            "lastServiceDate": "2024-04-20",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 346,
+                    "serviceName": "Avto yuma (sedan)",
+                    "serviceGroups": [
+                        "Avto-yuma xidməti"
+                    ],
+                    "universalServiceId": "other",
+                    "cost": {
+                        "amount": 5,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [],
+            "cost": {
+                "amount": 5,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 5,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 1339,
+            "serviceType": "Sürətlər qutusu xidməti",
+            "serviceGroups": [
+                "Sürətlər qutusu xidməti"
+            ],
+            "lastServiceDate": "2024-03-15",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 15,
+                    "serviceName": "Yağ dəyişmə (asan)",
+                    "serviceGroups": [
+                        "Sürətlər qutusu xidməti"
+                    ],
+                    "universalServiceId": "Transmission Fluid",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "Fuel-Efficient ATF",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "Fuel-Efficient ATF",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "Engine & Transmission Flush 473 ml",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 185.4,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 185.4,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        },
+        {
+            "recordId": 1334,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": [
+                "Mühərrik xidməti",
+                "Təkər xidməti"
+            ],
+            "lastServiceDate": "2024-03-14",
+            "lastServiceMileage": 0,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": [
+                        "Mühərrik xidməti"
+                    ],
+                    "universalServiceId": "Engine Oil",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                },
+                {
+                    "serviceCode": 214,
+                    "serviceName": "Yerdəyişmə R17-19 1-ədəd",
+                    "serviceGroups": [
+                        "Təkər xidməti"
+                    ],
+                    "universalServiceId": "Tires",
+                    "cost": {
+                        "amount": 0,
+                        "currency": "AZN"
+                    },
+                    "nextServiceDate": null,
+                    "nextServiceMileage": null
+                }
+            ],
+            "parts": [
+                {
+                    "name": "5W-20",
+                    "qty": 1,
+                    "unit": null
+                },
+                {
+                    "name": "5W-20",
+                    "qty": 0.22,
+                    "unit": null
+                },
+                {
+                    "name": "Engine & Transmission Flush 473 ml",
+                    "qty": 1,
+                    "unit": null
+                }
+            ],
+            "cost": {
+                "amount": 87.04,
+                "currency": "AZN"
+            },
+            "finalCost": {
+                "amount": 87.04,
+                "currency": "AZN"
+            },
+            "nextServiceDate": null,
+            "nextServiceMileage": null,
+            "invoiceNumber": null,
+            "dealer": "Babək Ekspress"
+        }
+    ]
+}

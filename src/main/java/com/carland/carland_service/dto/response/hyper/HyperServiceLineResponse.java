@@ -12,7 +12,7 @@ public class HyperServiceLineResponse {
     private Integer serviceCode;
     private String serviceName;
     private List<String> serviceGroups;
-    private Long universalServiceId;
+    private String universalServiceId;
     private HyperCostResponse cost;
     private LocalDate nextServiceDate;
     private Integer nextServiceMileage;

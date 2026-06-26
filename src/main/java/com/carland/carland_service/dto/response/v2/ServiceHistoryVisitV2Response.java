@@ -1,6 +1,5 @@
 package com.carland.carland_service.dto.response.v2;
 
-import com.carland.carland_service.dto.response.MoneyResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
