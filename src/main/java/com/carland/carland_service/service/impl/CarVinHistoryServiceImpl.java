@@ -8,9 +8,11 @@ import com.carland.carland_service.dto.response.hyper.HyperServicePartResponse;
 import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinResponse;
 import com.carland.carland_service.entity.Car;
 import com.carland.carland_service.entity.Customer;
+import com.carland.carland_service.entity.Partner;
 import com.carland.carland_service.entity.ServiceHistory;
 import com.carland.carland_service.entity.ServiceHistoryPart;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
+import com.carland.carland_service.enums.EnumPartnerId;
 import com.carland.carland_service.enums.EnumUserStatus;
 import com.carland.carland_service.enums.ServiceTypeTranslation;
 import com.carland.carland_service.exceptions.MissingFieldException;
@@ -20,6 +22,7 @@ import com.carland.carland_service.repository.CarRepository;
 import com.carland.carland_service.repository.CustomerRepository;
 import com.carland.carland_service.repository.ServiceHistoryPartRepository;
 import com.carland.carland_service.repository.ServiceHistoryRepository;
+import com.carland.carland_service.service.PartnerLookupService;
 import com.carland.carland_service.service.interfaces.CarVinHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
 
     private static final String HYPERSERVICE_SOURCE = "hyperservice";
     private static final String CACHE_SOURCE = "cache";
+    private static final EnumPartnerId HYPER_PARTNER = EnumPartnerId.HYPER;
 
     private static final ConcurrentHashMap<Long, Object> CAR_PERSIST_LOCKS = new ConcurrentHashMap<>();
 
@@ -49,6 +53,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
     private final CustomerRepository customerRepository;
     private final ServiceHistoryRepository serviceHistoryRepository;
     private final ServiceHistoryPartRepository serviceHistoryPartRepository;
+    private final PartnerLookupService partnerLookupService;
     private final HyperTokenService hyperTokenService;
     private final RestTemplate restTemplate;
 
@@ -96,11 +101,21 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
 
 
     private CarVinServiceHistoryResponse buildResponse(String vin, String source, List<ServiceHistory> rows, String acceptLanguage) {
+        Map<Long, Partner> partnerById = loadPartnersForRows(rows);
         return CarVinServiceHistoryResponse.builder()
                 .vin(vin)
                 .source(source)
-                .items(rows.stream().map(row -> mapServiceHistory(row, acceptLanguage)).toList())
+                .items(rows.stream().map(row -> mapServiceHistory(row, partnerById, acceptLanguage)).toList())
                 .build();
+    }
+
+    private Map<Long, Partner> loadPartnersForRows(List<ServiceHistory> rows) {
+        Set<Long> partnerIds = rows.stream()
+                .map(ServiceHistory::getServiceCenterId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        partnerIds.add(HYPER_PARTNER.getId());
+        return partnerLookupService.loadByIds(partnerIds);
     }
 
     private Object lockForCar(Long carId) {
@@ -159,13 +174,17 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
                 continue;
             }
 
+            Partner partner = partnerLookupService.find(HYPER_PARTNER).orElse(null);
+            String partnerName = partner != null ? partner.getName() : HYPER_PARTNER.getDefaultName();
+
             ServiceHistory history = ServiceHistory.builder()
                     .car(car)
                     .serviceName(item.getServiceType())
                     .actionType(groups)
                     .doneDate(item.getLastServiceDate())
                     .doneKm(item.getLastServiceMileage())
-                    .serviceCenter(null)
+                    .serviceCenter(partnerName)
+                    .serviceCenterId(HYPER_PARTNER.getId())
                     .serviceAmount(serviceAmount)
                     .dealer(item.getDealer())
                     .nextServiceDate(item.getNextServiceDate())
@@ -215,7 +234,7 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
         serviceHistoryPartRepository.saveAll(entities);
     }
 
-    private ServiceHistoryItemResponse mapServiceHistory(ServiceHistory history, String acceptLanguage) {
+    private ServiceHistoryItemResponse mapServiceHistory(ServiceHistory history, Map<Long, Partner> partnerById, String acceptLanguage) {
         List<ServiceHistoryPartResponse> parts = history.getId() == null
                 ? Collections.emptyList()
                 : serviceHistoryPartRepository.findAllByServiceHistory(history).stream()
@@ -233,14 +252,20 @@ public class CarVinHistoryServiceImpl implements CarVinHistoryService {
                 ? Collections.emptyList()
                 : ServiceTypeTranslation.translateList(history.getActionType(), acceptLanguage);
 
+        Long partnerId = partnerLookupService.resolvePartnerId(history.getServiceCenterId(), HYPER_PARTNER);
+        EnumPartnerId enumPartner = EnumPartnerId.fromId(partnerId).orElse(HYPER_PARTNER);
+        String partnerName = partnerLookupService.resolvePartnerName(
+                history.getServiceCenterId(), history.getServiceCenter(), partnerById, enumPartner);
+
         return ServiceHistoryItemResponse.builder()
                 .id(history.getId())
                 .serviceName(ServiceTypeTranslation.translate(history.getServiceName(), acceptLanguage))
                 .actionType(actionType)
                 .doneDate(history.getDoneDate())
                 .doneKM(history.getDoneKm())
-                .serviceCenter(history.getServiceCenter())
-                .serviceCenterId(history.getServiceCenterId() != null ? history.getServiceCenterId() : 1L)
+                .serviceCenter(partnerName)
+                .serviceCenterId(partnerId)
+                .partner(partnerLookupService.toDataResponse(partnerById.get(partnerId), enumPartner))
                 .serviceAmount(history.getServiceAmount())
                 .dealer(history.getDealer())
                 .parts(parts)

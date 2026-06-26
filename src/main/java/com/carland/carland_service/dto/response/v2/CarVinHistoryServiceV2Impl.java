@@ -8,7 +8,9 @@ import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinMockData;
 import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinResponse;
 import com.carland.carland_service.entity.Car;
 import com.carland.carland_service.entity.Customer;
+import com.carland.carland_service.entity.Partner;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
+import com.carland.carland_service.enums.EnumPartnerId;
 import com.carland.carland_service.enums.EnumUserStatus;
 import com.carland.carland_service.enums.ServiceTypeTranslation;
 import com.carland.carland_service.exceptions.MissingFieldException;
@@ -17,6 +19,8 @@ import com.carland.carland_service.exceptions.UserNotFoundException;
 import com.carland.carland_service.repository.CarRepository;
 import com.carland.carland_service.repository.CustomerRepository;
 import com.carland.carland_service.repository.VisitRepository;
+import com.carland.carland_service.service.HyperPercentageSyncService;
+import com.carland.carland_service.service.PartnerLookupService;
 import com.carland.carland_service.service.impl.HyperTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +42,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,14 +55,15 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
 
     private static final String CACHE_SOURCE = "cache";
     private static final String LIVE_SOURCE = "live";
-    private static final Long HYPERSERVICE_CENTER_ID = 1L;
-    private static final String HYPERSERVICE_CENTER_NAME = "HyperService";
+    private static final EnumPartnerId HYPER_PARTNER = EnumPartnerId.HYPER;
 
     private static final ConcurrentHashMap<Long, Object> CAR_PERSIST_LOCKS = new ConcurrentHashMap<>();
 
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
     private final VisitRepository visitRepository;
+    private final HyperPercentageSyncService hyperPercentageSyncService;
+    private final PartnerLookupService partnerLookupService;
     private final HyperTokenService hyperTokenService;
     private final RestTemplate restTemplate;
 
@@ -84,28 +90,32 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
 
         List<Visit> cachedVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
         if (!cachedVisits.isEmpty()) {
-            return buildResponse(vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
+            hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
+            return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
         }
 
         synchronized (lockForCar(car.getCarId())) {
             cachedVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
             if (!cachedVisits.isEmpty()) {
-                return buildResponse(vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
+                hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
+                return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
             }
 
             HyperVehicleByVinResponse hyperResponse = fetchHyperHistory(vin);
             if (hyperResponse == null || hyperResponse.getServiceHistory() == null || hyperResponse.getServiceHistory().isEmpty()) {
-                return buildResponse(vin, LIVE_SOURCE, Collections.emptyList(), acceptLanguage);
+                return buildResponse(car, vin, LIVE_SOURCE, Collections.emptyList(), acceptLanguage);
             }
 
             List<Visit> persisted = persistHyperVisits(car, hyperResponse.getServiceHistory());
-            return buildResponse(vin, LIVE_SOURCE, persisted, acceptLanguage);
+            hyperPercentageSyncService.syncFromVisits(car, persisted);
+            return buildResponse(car, vin, LIVE_SOURCE, persisted, acceptLanguage);
         }
     }
 
-    private CarVinServiceHistoryV2Response buildResponse(String vin, String source, List<Visit> visits, String acceptLanguage) {
+    private CarVinServiceHistoryV2Response buildResponse(Car car, String vin, String source, List<Visit> visits, String acceptLanguage) {
+        Map<Long, Partner> partnerById = loadPartnersForVisits(visits);
         List<ServiceHistoryVisitV2Response> items = visits.stream()
-                .map(visit -> mapVisit(visit, acceptLanguage))
+                .map(visit -> mapVisit(visit, partnerById, acceptLanguage))
                 .toList();
 
         return CarVinServiceHistoryV2Response.builder()
@@ -113,6 +123,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .source(source)
                 .summary(buildSummary(items))
                 .items(items)
+                .allTimeCost(car.getAllTimeCost())
                 .build();
     }
 
@@ -134,7 +145,21 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .build();
     }
 
-    private ServiceHistoryVisitV2Response mapVisit(Visit visit, String acceptLanguage) {
+    private Map<Long, Partner> loadPartnersForVisits(List<Visit> visits) {
+        Set<Long> partnerIds = visits.stream()
+                .map(Visit::getServiceCenterId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(HashSet::new));
+        partnerIds.add(HYPER_PARTNER.getId());
+        return partnerLookupService.loadByIds(partnerIds);
+    }
+
+    private ServiceHistoryVisitV2Response mapVisit(Visit visit, Map<Long, Partner> partnerById, String acceptLanguage) {
+        Long partnerId = partnerLookupService.resolvePartnerId(visit.getServiceCenterId(), HYPER_PARTNER);
+        EnumPartnerId enumPartner = EnumPartnerId.fromId(partnerId).orElse(HYPER_PARTNER);
+        String partnerName = partnerLookupService.resolvePartnerName(
+                visit.getServiceCenterId(), visit.getServiceCenterName(), partnerById, enumPartner);
+
         List<String> serviceGroups = visit.getServiceGroups() == null
                 ? Collections.emptyList()
                 : ServiceTypeTranslation.translateList(visit.getServiceGroups(), acceptLanguage);
@@ -147,8 +172,9 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .services(mapServiceLines(visit.getServices()))
                 .date(visit.getLastServiceDate())
                 .mileage(visit.getLastServiceMileage())
-                .serviceCenterId(visit.getServiceCenterId() != null ? visit.getServiceCenterId() : HYPERSERVICE_CENTER_ID)
-                .serviceCenterName(visit.getServiceCenterName() != null ? visit.getServiceCenterName() : HYPERSERVICE_CENTER_NAME)
+                .serviceCenterId(partnerId)
+                .serviceCenterName(partnerName)
+                .partner(partnerLookupService.toDataResponse(partnerById.get(partnerId), enumPartner))
                 .dealer(visit.getDealer())
                 .amount(toMoney(visit.getFinalCostAmount(), visit.getFinalCostCurrency()))
                 .parts(mapParts(visit.getParts()))
@@ -226,6 +252,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
     private List<Visit> persistHyperVisits(Car car, List<HyperServiceHistoryItemResponse> items) {
         List<Visit> persisted = new ArrayList<>();
         Set<Long> seenRecordIds = new HashSet<>();
+        BigDecimal allTimeCost = BigDecimal.ZERO;
 
         for (HyperServiceHistoryItemResponse item : items) {
             if (item.getRecordId() == null) {
@@ -236,6 +263,8 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 log.info("Skipping duplicate Hyper recordId in same response for carId={}: {}", car.getCarId(), item.getRecordId());
                 continue;
             }
+
+            allTimeCost = allTimeCost.add(resolveVisitFinalCost(item));
 
             Optional<Visit> existing = visitRepository.findByCarAndHyperRecordId(car, item.getRecordId());
             if (existing.isPresent()) {
@@ -249,13 +278,32 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
             persisted.add(saved);
         }
 
+        car.setAllTimeCost(allTimeCost);
+        carRepository.save(car);
+        log.info("Updated allTimeCost for carId={} | total={}", car.getCarId(), allTimeCost);
+
         return persisted.stream()
                 .sorted(Comparator.comparing(Visit::getLastServiceDate, Comparator.nullsLast(Comparator.reverseOrder()))
                         .thenComparing(Visit::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
+    /** Visit total from Hyper: finalCost (post-discount) is authoritative; cost is fallback only. */
+    private BigDecimal resolveVisitFinalCost(HyperServiceHistoryItemResponse item) {
+        if (item.getFinalCost() != null && item.getFinalCost().getAmount() != null) {
+            return item.getFinalCost().getAmount();
+        }
+        if (item.getCost() != null && item.getCost().getAmount() != null) {
+            return item.getCost().getAmount();
+        }
+        return BigDecimal.ZERO;
+    }
+
     private Visit mapHyperItemToVisit(Car car, HyperServiceHistoryItemResponse item) {
+        Partner partner = partnerLookupService.find(HYPER_PARTNER).orElse(null);
+        Long partnerId = HYPER_PARTNER.getId();
+        String partnerName = partner != null ? partner.getName() : HYPER_PARTNER.getDefaultName();
+
         Visit visit = Visit.builder()
                 .car(car)
                 .hyperRecordId(item.getRecordId())
@@ -264,8 +312,8 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .lastServiceMileage(item.getLastServiceMileage())
                 .invoiceNumber(item.getInvoiceNumber())
                 .dealer(item.getDealer())
-                .serviceCenterId(HYPERSERVICE_CENTER_ID)
-                .serviceCenterName(HYPERSERVICE_CENTER_NAME)
+                .serviceCenterId(partnerId)
+                .serviceCenterName(partnerName)
                 .costAmount(item.getCost() != null ? item.getCost().getAmount() : null)
                 .costCurrency(item.getCost() != null ? item.getCost().getCurrency() : null)
                 .finalCostAmount(item.getFinalCost() != null ? item.getFinalCost().getAmount() : null)

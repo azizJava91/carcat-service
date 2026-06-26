@@ -437,6 +437,16 @@ public enum EnumMessagesLangValues {
             "Auto Service already exists",
             "Автоcepвиc уже существует"),
 
+    PARTNER_NOT_FOUND(
+            "Partner tapılmadı",
+            "Partner not found",
+            "Партнер не найден"),
+
+    PARTNER_ALREADY_EXISTS(
+            "Partner mövcuddur",
+            "Partner already exists",
+            "Партнер уже существует"),
+
     CALENDAR_ALREADY_EXISTS(
             "Seçilən günə cədvəl mövcuddur",
             "Calendar already exists for selected day",

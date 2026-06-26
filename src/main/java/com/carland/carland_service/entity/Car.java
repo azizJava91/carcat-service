@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class Car {
     private Long mileage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private BigDecimal allTimeCost;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id")
     @ToString.Exclude

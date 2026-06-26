@@ -21,6 +21,7 @@ public class ServiceHistoryItemResponse {
     private Integer doneKM;
     private String serviceCenter;
     private Long serviceCenterId;
+    private PartnerDataResponse partner;
     private BigDecimal serviceAmount;
     private String dealer;
     private List<ServiceHistoryPartResponse> parts;

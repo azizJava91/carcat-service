@@ -2,10 +2,11 @@ package com.carland.carland_service.dto.response.v2;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,14 +36,9 @@ public class ServiceHistoryV2 {
     /** CarCat ServiceEntity id from Hyper. */
     private Long universalServiceId;
 
-    @Builder.Default
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-            name = "visit_service_line_groups",
-            joinColumns = @JoinColumn(name = "service_line_id")
-    )
-    @Column(name = "service_group")
-    private List<String> serviceGroups = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "service_groups", columnDefinition = "jsonb")
+    private List<String> serviceGroups;
 
     @Column(precision = 12, scale = 2)
     private BigDecimal costAmount;

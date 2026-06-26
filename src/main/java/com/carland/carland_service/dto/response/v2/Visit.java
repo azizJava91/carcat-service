@@ -3,6 +3,8 @@ package com.carland.carland_service.dto.response.v2;
 import com.carland.carland_service.entity.Car;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,8 +46,10 @@ public class Visit {
 
     private String dealer;
 
+    /** {@link com.carland.carland_service.enums.EnumPartnerId} — references {@code partners.id}. */
     private Long serviceCenterId;
 
+    /** Denormalized partner display name at write time. */
     private String serviceCenterName;
 
     @Column(precision = 12, scale = 2)
@@ -58,11 +62,9 @@ public class Visit {
 
     private String finalCostCurrency;
 
-    @Builder.Default
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "visit_service_groups", joinColumns = @JoinColumn(name = "visit_id"))
-    @Column(name = "service_group")
-    private List<String> serviceGroups = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "service_groups", columnDefinition = "jsonb")
+    private List<String> serviceGroups;
 
     @Builder.Default
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

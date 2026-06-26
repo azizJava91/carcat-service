@@ -30,7 +30,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 208,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -44,7 +44,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 209,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -58,7 +58,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 157,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -72,7 +72,7 @@
                     "serviceGroups": [
                         "Salon xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 151,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -86,7 +86,7 @@
                     "serviceGroups": [
                         "Diaqnostika xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 248,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -100,7 +100,7 @@
                     "serviceGroups": [
                         "Maye xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 197,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -114,7 +114,7 @@
                     "serviceGroups": [
                         "Təkər xidməti"
                     ],
-                    "universalServiceId": "Tires",
+                    "universalServiceId": 143,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -128,7 +128,7 @@
                     "serviceGroups": [
                         "Asqı xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 216,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -204,7 +204,7 @@
                     "serviceGroups": [
                         "Rəngsaz xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 200,
                     "cost": {
                         "amount": 20,
                         "currency": "AZN"
@@ -263,7 +263,7 @@
                     "serviceGroups": [
                         "Cilalama xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 225,
                     "cost": {
                         "amount": 80,
                         "currency": "AZN"
@@ -333,7 +333,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 168,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -347,7 +347,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 175,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -361,7 +361,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 243,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -375,7 +375,7 @@
                     "serviceGroups": [
                         "Salon xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 184,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -389,7 +389,7 @@
                     "serviceGroups": [
                         "Diaqnostika xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 220,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -403,7 +403,7 @@
                     "serviceGroups": [
                         "Maye xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 179,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -417,7 +417,7 @@
                     "serviceGroups": [
                         "Təkər xidməti"
                     ],
-                    "universalServiceId": "Tires",
+                    "universalServiceId": 191,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -431,7 +431,7 @@
                     "serviceGroups": [
                         "Asqı xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 194,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -512,7 +512,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 221,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -526,7 +526,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 201,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -540,7 +540,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 174,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -554,7 +554,7 @@
                     "serviceGroups": [
                         "Salon xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 222,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -568,7 +568,7 @@
                     "serviceGroups": [
                         "Diaqnostika xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 183,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -582,7 +582,7 @@
                     "serviceGroups": [
                         "Maye xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 215,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -596,7 +596,7 @@
                     "serviceGroups": [
                         "Təkər xidməti"
                     ],
-                    "universalServiceId": "Tires",
+                    "universalServiceId": 210,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -610,7 +610,7 @@
                     "serviceGroups": [
                         "Asqı xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 202,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -685,7 +685,7 @@
                     "serviceGroups": [
                         "Çilingər xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 150,
                     "cost": {
                         "amount": 20,
                         "currency": "AZN"
@@ -721,7 +721,7 @@
                     "serviceCode": 1018,
                     "serviceName": "Çöl remen sökülüb yığılması/dəyişilməsi",
                     "serviceGroups": [],
-                    "universalServiceId": "other",
+                    "universalServiceId": 163,
                     "cost": {
                         "amount": 6,
                         "currency": "AZN"
@@ -735,7 +735,7 @@
                     "serviceGroups": [
                         "Avto-yuma xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 186,
                     "cost": {
                         "amount": 4,
                         "currency": "AZN"
@@ -794,7 +794,7 @@
                     "serviceGroups": [
                         "Avto-yuma xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 172,
                     "cost": {
                         "amount": 10,
                         "currency": "AZN"
@@ -856,7 +856,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 207,
                     "cost": {
                         "amount": 1.11,
                         "currency": "AZN"
@@ -870,7 +870,7 @@
                     "serviceGroups": [
                         "Filtr xidməti"
                     ],
-                    "universalServiceId": "Cabin Filter",
+                    "universalServiceId": 152,
                     "cost": {
                         "amount": 0.56,
                         "currency": "AZN"
@@ -884,7 +884,7 @@
                     "serviceGroups": [
                         "Filtr xidməti"
                     ],
-                    "universalServiceId": "Air Filter",
+                    "universalServiceId": 187,
                     "cost": {
                         "amount": 0.56,
                         "currency": "AZN"
@@ -898,7 +898,7 @@
                     "serviceGroups": [
                         "Çilingər xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 203,
                     "cost": {
                         "amount": 1.67,
                         "currency": "AZN"
@@ -912,7 +912,7 @@
                     "serviceGroups": [
                         "Avto-yuma xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 241,
                     "cost": {
                         "amount": 1.11,
                         "currency": "AZN"
@@ -971,7 +971,7 @@
                     "serviceGroups": [
                         "Balans xidməti"
                     ],
-                    "universalServiceId": "Wheel Balancing",
+                    "universalServiceId": 226,
                     "cost": {
                         "amount": 12,
                         "currency": "AZN"
@@ -1009,7 +1009,7 @@
                     "serviceGroups": [
                         "Elektrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 148,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1058,7 +1058,7 @@
                     "serviceGroups": [
                         "Çilingər xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 189,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1096,7 +1096,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 192,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1178,7 +1178,7 @@
                     "serviceGroups": [
                         "Diaqnostika xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 227,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1192,7 +1192,7 @@
                     "serviceGroups": [
                         "Elektrik xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 247,
                     "cost": {
                         "amount": 5,
                         "currency": "AZN"
@@ -1237,7 +1237,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 198,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1251,7 +1251,7 @@
                     "serviceGroups": [
                         "Diaqnostika xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 232,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1300,7 +1300,7 @@
                     "serviceGroups": [
                         "Çilingər xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 205,
                     "cost": {
                         "amount": 9,
                         "currency": "AZN"
@@ -1349,7 +1349,7 @@
                     "serviceGroups": [
                         "Çilingər xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 178,
                     "cost": {
                         "amount": 10,
                         "currency": "AZN"
@@ -1489,7 +1489,7 @@
                     "serviceGroups": [
                         "Avto-yuma xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 165,
                     "cost": {
                         "amount": 5,
                         "currency": "AZN"
@@ -1527,7 +1527,7 @@
                     "serviceGroups": [
                         "Avto-yuma xidməti"
                     ],
-                    "universalServiceId": "other",
+                    "universalServiceId": 181,
                     "cost": {
                         "amount": 5,
                         "currency": "AZN"
@@ -1565,7 +1565,7 @@
                     "serviceGroups": [
                         "Sürətlər qutusu xidməti"
                     ],
-                    "universalServiceId": "Transmission Fluid",
+                    "universalServiceId": 182,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1620,7 +1620,7 @@
                     "serviceGroups": [
                         "Mühərrik xidməti"
                     ],
-                    "universalServiceId": "Engine Oil",
+                    "universalServiceId": 160,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"
@@ -1634,7 +1634,7 @@
                     "serviceGroups": [
                         "Təkər xidməti"
                     ],
-                    "universalServiceId": "Tires",
+                    "universalServiceId": 212,
                     "cost": {
                         "amount": 0,
                         "currency": "AZN"

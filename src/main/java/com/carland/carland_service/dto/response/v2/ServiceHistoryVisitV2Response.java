@@ -1,5 +1,6 @@
 package com.carland.carland_service.dto.response.v2;
 
+import com.carland.carland_service.dto.response.PartnerDataResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +21,10 @@ public class ServiceHistoryVisitV2Response {
     private List<ServiceHistoryLineV2Response> services;
     private LocalDate date;
     private Integer mileage;
+    /** Same as {@link #partner}.{@code id} — kept for mobile contract compatibility. */
     private Long serviceCenterId;
     private String serviceCenterName;
+    private PartnerDataResponse partner;
     private String dealer;
     private MoneyResponse amount;
     private List<ServiceHistoryPartV2Response> parts;

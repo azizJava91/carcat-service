@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -16,4 +17,5 @@ public class CarVinServiceHistoryV2Response {
     private String source;
     private ServiceHistorySummaryV2Response summary;
     private List<ServiceHistoryVisitV2Response> items;
+    private BigDecimal allTimeCost;
 }

@@ -1009,6 +1009,7 @@ public class CarServiceImpl implements CarService {
                     .serviceNameAz(serviceEntity.getNameAz())
                     .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
+                    .serviceId(serviceEntity.getId())
                     .carId(newCar.getCarId())
                     .build();
 
@@ -1020,6 +1021,7 @@ public class CarServiceImpl implements CarService {
                     .serviceNameAz(serviceEntity.getNameAz())
                     .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
+                    .serviceId(serviceEntity.getId())
                     .car(newCar)
                     .build();
             log.info("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
@@ -1334,6 +1336,7 @@ public class CarServiceImpl implements CarService {
                 .bodyType(car.getBodyType())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .vinProvidedFields(car.getVinProvidedFields())
+                .allTimeCost(car.getAllTimeCost())
                 .resource(resource)
                 .build();
     }
