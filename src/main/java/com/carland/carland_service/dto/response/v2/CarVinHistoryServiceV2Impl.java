@@ -43,7 +43,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -88,15 +87,15 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
-        List<Visit> cachedVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
-        if (!cachedVisits.isEmpty()) {
+        List<Visit> cachedVisits = loadCachedVisits(car);
+        if (cachedVisits != null) {
             hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
             return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
         }
 
         synchronized (lockForCar(car.getCarId())) {
-            cachedVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
-            if (!cachedVisits.isEmpty()) {
+            cachedVisits = loadCachedVisits(car);
+            if (cachedVisits != null) {
                 hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
                 return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
             }
@@ -110,6 +109,14 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
             hyperPercentageSyncService.syncFromVisits(car, persisted);
             return buildResponse(car, vin, LIVE_SOURCE, persisted, acceptLanguage);
         }
+    }
+
+    /** Returns visits when cache exists; null when DB has no visits for this car (cheap exists check first). */
+    private List<Visit> loadCachedVisits(Car car) {
+        if (!visitRepository.existsByCar(car)) {
+            return null;
+        }
+        return visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
     }
 
     private CarVinServiceHistoryV2Response buildResponse(Car car, String vin, String source, List<Visit> visits, String acceptLanguage) {
@@ -257,6 +264,14 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
         Long partnerId = HYPER_PARTNER.getId();
         String partnerName = hyperPartner != null ? hyperPartner.getName() : HYPER_PARTNER.getDefaultName();
 
+        Set<Long> existingRecordIds = visitRepository.findHyperRecordIdsByCar(car);
+        Map<Long, Visit> existingByRecordId = existingRecordIds.isEmpty()
+                ? Map.of()
+                : visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car).stream()
+                        .collect(Collectors.toMap(Visit::getHyperRecordId, visit -> visit, (a, b) -> a));
+
+        List<Visit> toSave = new ArrayList<>();
+
         for (HyperServiceHistoryItemResponse item : items) {
             if (item.getRecordId() == null) {
                 log.warn("Skipping Hyper visit without recordId for carId={}", car.getCarId());
@@ -269,16 +284,18 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
 
             allTimeCost = allTimeCost.add(resolveVisitFinalCost(item));
 
-            Optional<Visit> existing = visitRepository.findByCarAndHyperRecordId(car, item.getRecordId());
-            if (existing.isPresent()) {
+            Visit existing = existingByRecordId.get(item.getRecordId());
+            if (existing != null) {
                 log.info("Skipping duplicate Hyper visit for carId={}, recordId={}", car.getCarId(), item.getRecordId());
-                persisted.add(existing.get());
+                persisted.add(existing);
                 continue;
             }
 
-            Visit visit = mapHyperItemToVisit(car, item, partnerId, partnerName);
-            Visit saved = visitRepository.save(visit);
-            persisted.add(saved);
+            toSave.add(mapHyperItemToVisit(car, item, partnerId, partnerName));
+        }
+
+        if (!toSave.isEmpty()) {
+            persisted.addAll(visitRepository.saveAll(toSave));
         }
 
         car.setAllTimeCost(allTimeCost);
