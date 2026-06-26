@@ -123,7 +123,6 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .source(source)
                 .summary(buildSummary(items))
                 .items(items)
-                .allTimeCost(car.getAllTimeCost())
                 .build();
     }
 
