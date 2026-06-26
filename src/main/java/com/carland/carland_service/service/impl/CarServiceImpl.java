@@ -493,6 +493,7 @@ public class CarServiceImpl implements CarService {
                                 .nextServiceDate(nextServiceDate != null ? capitalizeMonth(nextServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
                                 .status(percentage.getStatus())
                                 .servicedStatus(record != null ? record.getServicedStatus() : null)
+                                .important(percentage.isImportant())
                                 .build()
                 );
 
@@ -600,6 +601,7 @@ public class CarServiceImpl implements CarService {
                             .nextServiceDate(nextServiceDate != null ? capitalizeMonth(nextServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
                             .status(percentage.getStatus())
                             .servicedStatus(record != null ? record.getServicedStatus() : null)
+                            .important(percentage != null ? percentage.isImportant() : serviceEntity.isImportant())
                             .build()
             );
 
@@ -687,6 +689,7 @@ public class CarServiceImpl implements CarService {
                 .lastServiceDate(percentage.getLastServiceDate().format(formatter))
                 .nextServiceKm(percentage.getNextServiceKm())
                 .nextServiceDate(percentage.getNextServiceDate().format(formatter))
+                .important(percentage.isImportant())
                 .build();
         log.info("response: {}", response);
         return response;
@@ -735,7 +738,21 @@ public class CarServiceImpl implements CarService {
         List<CarServicePercentageResponse> responseList = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
+        Set<Long> serviceIds = percentages.stream()
+                .map(Percentage::getServiceId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, ServiceEntity> servicesById = serviceEntityRepository.findAllById(serviceIds).stream()
+                .collect(Collectors.toMap(ServiceEntity::getId, s -> s));
+
         for (Percentage percentage : percentages) {
+            ServiceEntity service = percentage.getServiceId() != null
+                    ? servicesById.get(percentage.getServiceId())
+                    : null;
+            if (service != null) {
+                percentage.setImportant(service.isImportant());
+            }
+
             //  EDITED olsa birbasa hesablamadan db den versin manipulation olmasin update , save olmasin
             if ("EDITED".equals(percentage.getStatus())) {
 
@@ -765,8 +782,13 @@ public class CarServiceImpl implements CarService {
                                                 ? percentage.getNextServiceDate().format(formatter)
                                                 : null
                                 )
+                                .important(percentage.isImportant())
                                 .build()
                 );
+
+                if (service != null) {
+                    percentageRepository.save(percentage);
+                }
 
                 continue;
             }
@@ -851,6 +873,7 @@ public class CarServiceImpl implements CarService {
                             .lastServiceDate(lastServiceDate.format(formatter))
                             .nextServiceKm(nextServiceKm)
                             .nextServiceDate(nextServiceDate.format(formatter))
+                            .important(percentage.isImportant())
                             .build()
             );
 
@@ -1010,6 +1033,7 @@ public class CarServiceImpl implements CarService {
                     .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
                     .serviceId(serviceEntity.getId())
+                    .important(serviceEntity.isImportant())
                     .carId(newCar.getCarId())
                     .build();
 

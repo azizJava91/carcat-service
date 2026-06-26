@@ -3,6 +3,7 @@ package com.carland.carland_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +42,10 @@ public class Percentage {
     Integer monthPercentage;
 
     Long serviceId;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    boolean important;
 
     /**
      * Added status field to control percentage handling.
