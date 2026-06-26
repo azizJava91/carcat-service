@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,11 +17,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "service_histories")
+@Table(name = "service_histories", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_service_histories_car_partner_record", columnNames = {"car_id", "partner_record_id"})
+})
 public class ServiceHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+    Long partnerRecordId;
     String serviceName;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
@@ -31,10 +35,17 @@ public class ServiceHistory {
     @Column(name = "service_center_id")
     Long serviceCenterId;
     BigDecimal serviceAmount;
+    String amountCurrency;
     String dealer;
     LocalDate nextServiceDate;
     Integer nextServiceMileage;
     String source;
+
+    @OneToMany(mappedBy = "serviceHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    List<ServiceHistoryLine> lines = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
     @ToString.Exclude

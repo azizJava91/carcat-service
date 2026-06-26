@@ -28,6 +28,10 @@ public interface ServiceHistoryRepository extends JpaRepository<ServiceHistory, 
 
     List<ServiceHistory> findAllByCarOrderByDoneDateDescIdDesc(Car car);
 
+    List<ServiceHistory> findAllByCarAndPartnerRecordIdIsNotNullOrderByDoneDateDescIdDesc(Car car);
+
+    Optional<ServiceHistory> findByCarAndPartnerRecordId(Car car, Long partnerRecordId);
+
     Optional<ServiceHistory> findByCarAndServiceNameAndDoneDateAndDoneKmAndDealerAndServiceAmountAndSource(
             Car car,
             String serviceName,

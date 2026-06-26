@@ -8,18 +8,12 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class HyperServiceHistoryItemResponse {
-    private Long recordId;
-    private String serviceType;
+public class HyperServiceLineResponse {
+    private Integer serviceCode;
+    private String serviceName;
     private List<String> serviceGroups;
-    private LocalDate lastServiceDate;
-    private Integer lastServiceMileage;
-    private List<HyperServiceLineResponse> services;
-    private List<HyperServicePartResponse> parts;
+    private Long universalServiceId;
     private HyperCostResponse cost;
-    private HyperCostResponse finalCost;
     private LocalDate nextServiceDate;
     private Integer nextServiceMileage;
-    private String invoiceNumber;
-    private String dealer;
 }

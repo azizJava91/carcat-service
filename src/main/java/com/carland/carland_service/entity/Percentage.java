@@ -21,6 +21,7 @@ public class Percentage {
     Long id;
     String serviceName;
     String actionType;
+
     String serviceNameRu;
     String serviceNameAz;
 
@@ -39,6 +40,7 @@ public class Percentage {
     Integer kmPercentage;
     Integer monthPercentage;
 
+    Long serviceId;
 
     /**
      * Added status field to control percentage handling.
