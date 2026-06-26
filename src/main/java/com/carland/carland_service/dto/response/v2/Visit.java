@@ -3,6 +3,7 @@ package com.carland.carland_service.dto.response.v2;
 import com.carland.carland_service.entity.Car;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -71,6 +72,7 @@ public class Visit {
     private List<ServiceHistoryV2> services = new ArrayList<>();
 
     @Builder.Default
+    @BatchSize(size = 32)
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ServiceHistoryPartV2> parts = new ArrayList<>();
 

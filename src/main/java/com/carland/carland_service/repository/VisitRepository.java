@@ -12,7 +12,8 @@ import java.util.Optional;
 @Repository
 public interface VisitRepository extends JpaRepository<Visit, Long> {
 
-    @EntityGraph(attributePaths = {"services", "parts"})
+    /** Eager-fetch services; parts loaded via {@link BatchSize} (Hibernate cannot join-fetch two List bags). */
+    @EntityGraph(attributePaths = {"services"})
     List<Visit> findAllByCarOrderByLastServiceDateDescIdDesc(Car car);
 
     Optional<Visit> findByCarAndHyperRecordId(Car car, Long hyperRecordId);
