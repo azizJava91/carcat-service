@@ -17,4 +17,6 @@ public interface PercentageRepository extends JpaRepository<Percentage, Long> {
 
 
     Percentage findByServiceNameAndCarId(String serviceName, Long carId);
+
+    Percentage findByServiceIdAndCarId(Long serviceId, Long carId);
 }

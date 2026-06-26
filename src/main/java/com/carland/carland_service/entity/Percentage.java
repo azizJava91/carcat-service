@@ -25,6 +25,7 @@ public class Percentage {
 
     String serviceNameRu;
     String serviceNameAz;
+    String serviceNameEn;
 
     Long intervalKm;
     Integer intervalMonth;

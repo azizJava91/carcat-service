@@ -232,8 +232,10 @@ public class CarServiceImpl implements CarService {
         List<RecordResponse> responses = customerServiceRecordList.stream()
                 .map(record -> RecordResponse.builder()
                         .id(record.getId())
+                        .serviceId(record.getServiceId())
                         .serviceName(record.getServiceName())
                         .serviceNameAz(record.getServiceNameAz())
+                        .serviceNameEn(record.getServiceNameEn())
                         .serviceNameRu(record.getServiceNameRu())
                         .actionType(record.getActionType())
                         .doneDate(record.getDoneDate())
@@ -412,9 +414,9 @@ public class CarServiceImpl implements CarService {
         List<ServiceHistory> serviceHistories = serviceHistoryRepository.findAllByCar(car);
         log.info("serviceHistories {}", serviceHistories.stream().map(serviceHistory -> serviceHistory.getServiceName() + " , ").toList());
         for (ServiceEntity serviceEntity : serviceEntities) {
-            CustomerServiceRecord record = customerServiceRecordRepository.findByServiceNameAndCar(serviceEntity.getServiceName(), car);
+            CustomerServiceRecord record = customerServiceRecordRepository.findByServiceIdAndCar(serviceEntity.getId(), car);
 
-            Percentage percentage = percentageRepository.findByServiceNameAndCarId(serviceEntity.getServiceName(), car.getCarId());
+            Percentage percentage = percentageRepository.findByServiceIdAndCarId(serviceEntity.getId(), car.getCarId());
 
             boolean useEditedPercentage = percentage != null && "EDITED".equalsIgnoreCase(percentage.getStatus());
 
@@ -475,11 +477,11 @@ public class CarServiceImpl implements CarService {
 
                         CarServicePercentageResponse.builder()
                                 .percentageId(percentage.getId())
-                                .serviceName(switch (acceptLanguage) {
-                                    case "az" -> percentage.getServiceNameAz();
-                                    case "ru" -> percentage.getServiceNameRu();
-                                    default -> percentage.getServiceName();
-                                })
+                                .serviceId(serviceEntity.getId())
+                                .serviceName(serviceEntity.getServiceName())
+                                .serviceNameAz(serviceEntity.getNameAz())
+                                .serviceNameEn(serviceEntity.getNameEn())
+                                .serviceNameRu(serviceEntity.getNameRu())
                                 .actionType(percentage.getActionType())
                                 .intervalKm(percentage.getIntervalKm())
                                 .intervalMonth(percentage.getIntervalMonth())
@@ -504,9 +506,10 @@ public class CarServiceImpl implements CarService {
 // ================= CREATED / DEFAULT FLOW =================
 
             List<CustomerServiceRecord> csrList = customerServiceRecordList.stream()
-                    .filter(r -> r.getServiceName().equalsIgnoreCase(serviceEntity.getServiceName()) && r.getActionType().equalsIgnoreCase(serviceEntity.getActionType()))
+                    .filter(r -> serviceEntity.getId().equals(r.getServiceId()))
                     .toList();
 
+            // ServiceHistory Hyper kaynakli; serviceId yok, isim+actionType ile eslesir
             List<ServiceHistory> shList = serviceHistories.stream()
                     .filter(h -> h.getServiceName().equalsIgnoreCase(serviceEntity.getServiceName())
                             && h.getActionType() != null
@@ -583,11 +586,11 @@ public class CarServiceImpl implements CarService {
             responseList.add(
                     CarServicePercentageResponse.builder()
                             .percentageId(percentage != null ? percentage.getId() : null)
-                            .serviceName(switch (acceptLanguage) {
-                                case "az" -> percentage.getServiceNameAz();
-                                case "ru" -> percentage.getServiceNameRu();
-                                default -> percentage.getServiceName();
-                            })
+                            .serviceId(serviceEntity.getId())
+                            .serviceName(serviceEntity.getServiceName())
+                            .serviceNameAz(serviceEntity.getNameAz())
+                            .serviceNameEn(serviceEntity.getNameEn())
+                            .serviceNameRu(serviceEntity.getNameRu())
                             .actionType(serviceEntity.getActionType())
                             .intervalKm(serviceEntity.getIntervalKm())
                             .intervalMonth(serviceEntity.getIntervalMonth())
@@ -599,7 +602,7 @@ public class CarServiceImpl implements CarService {
                             .lastServiceDate(capitalizeMonth(lastServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)))
                             .nextServiceKm(nextServiceKm)
                             .nextServiceDate(nextServiceDate != null ? capitalizeMonth(nextServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
-                            .status(percentage.getStatus())
+                            .status(percentage != null ? percentage.getStatus() : null)
                             .servicedStatus(record != null ? record.getServicedStatus() : null)
                             .important(percentage != null ? percentage.isImportant() : serviceEntity.isImportant())
                             .build()
@@ -669,11 +672,11 @@ public class CarServiceImpl implements CarService {
 
         CarServicePercentageResponse response = CarServicePercentageResponse.builder()
                 .percentageId(percentage.getId())
-                .serviceName(switch (acceptLanguage) {
-                    case "az" -> percentage.getServiceNameAz();
-                    case "ru" -> percentage.getServiceNameRu();
-                    default -> percentage.getServiceName();
-                })
+                .serviceId(percentage.getServiceId())
+                .serviceName(percentage.getServiceName())
+                .serviceNameAz(percentage.getServiceNameAz())
+                .serviceNameEn(percentage.getServiceNameEn())
+                .serviceNameRu(percentage.getServiceNameRu())
                 .actionType(percentage.getActionType())
 
                 .intervalKm(percentage.getIntervalKm())
@@ -683,12 +686,12 @@ public class CarServiceImpl implements CarService {
                 .monthPercentage(percentage.getMonthPercentage())
 
                 .remainingKm(percentage.getRemainingKm())
-                .remainingMonths(percentage.getRemainingMonths().format(formatter))
+                .remainingMonths(percentage.getRemainingMonths() != null ? percentage.getRemainingMonths().format(formatter) : null)
 
                 .lastServiceKm(percentage.getLastServiceKm())
-                .lastServiceDate(percentage.getLastServiceDate().format(formatter))
+                .lastServiceDate(percentage.getLastServiceDate() != null ? percentage.getLastServiceDate().format(formatter) : null)
                 .nextServiceKm(percentage.getNextServiceKm())
-                .nextServiceDate(percentage.getNextServiceDate().format(formatter))
+                .nextServiceDate(percentage.getNextServiceDate() != null ? percentage.getNextServiceDate().format(formatter) : null)
                 .important(percentage.isImportant())
                 .build();
         log.info("response: {}", response);
@@ -751,14 +754,23 @@ public class CarServiceImpl implements CarService {
                     : null;
             if (service != null) {
                 percentage.setImportant(service.isImportant());
+                percentage.setServiceName(service.getServiceName());
+                percentage.setServiceNameAz(service.getNameAz());
+                percentage.setServiceNameEn(service.getNameEn());
+                percentage.setServiceNameRu(service.getNameRu());
             }
 
             //  EDITED olsa birbasa hesablamadan db den versin manipulation olmasin update , save olmasin
-            if ("EDITED".equals(percentage.getStatus())) {
+            if ("EDITED".equalsIgnoreCase(percentage.getStatus())) {
 
                 responseList.add(
                         CarServicePercentageResponse.builder()
+                                .percentageId(percentage.getId())
+                                .serviceId(percentage.getServiceId())
                                 .serviceName(percentage.getServiceName())
+                                .serviceNameAz(percentage.getServiceNameAz())
+                                .serviceNameEn(percentage.getServiceNameEn())
+                                .serviceNameRu(percentage.getServiceNameRu())
                                 .actionType(percentage.getActionType())
                                 .intervalKm(percentage.getIntervalKm())
                                 .intervalMonth(percentage.getIntervalMonth())
@@ -794,8 +806,9 @@ public class CarServiceImpl implements CarService {
             }
             CustomerServiceRecord customerRecord =
                     customerServiceRecordRepository
-                            .findByServiceNameAndCar(percentage.getServiceName(), car);
+                            .findByServiceIdAndCar(percentage.getServiceId(), car);
 
+            // ServiceHistory Hyper kaynakli; serviceId yok, isimle eslesir
             ServiceHistory serviceHistory =
                     serviceHistoryRepository
                             .findTopByServiceNameAndCarOrderByDoneDateDesc(
@@ -857,11 +870,12 @@ public class CarServiceImpl implements CarService {
             /* ===== RESPONSE ===== */
             responseList.add(
                     CarServicePercentageResponse.builder()
-                            .serviceName(switch (acceptLanguage) {
-                                case "az" -> percentage.getServiceNameAz();
-                                case "ru" -> percentage.getServiceNameRu();
-                                default -> percentage.getServiceName();
-                            })
+                            .percentageId(percentage.getId())
+                            .serviceId(percentage.getServiceId())
+                            .serviceName(percentage.getServiceName())
+                            .serviceNameAz(percentage.getServiceNameAz())
+                            .serviceNameEn(percentage.getServiceNameEn())
+                            .serviceNameRu(percentage.getServiceNameRu())
                             .actionType(percentage.getActionType())
                             .intervalKm((long) intervalKm)
                             .intervalMonth(intervalMonth)
@@ -1030,10 +1044,12 @@ public class CarServiceImpl implements CarService {
                     .intervalMonth(serviceEntity.getIntervalMonth())
                     .serviceName(serviceEntity.getServiceName())
                     .serviceNameAz(serviceEntity.getNameAz())
+                    .serviceNameEn(serviceEntity.getNameEn())
                     .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
                     .serviceId(serviceEntity.getId())
                     .important(serviceEntity.isImportant())
+                    .status("CREATED")
                     .carId(newCar.getCarId())
                     .build();
 
@@ -1043,6 +1059,7 @@ public class CarServiceImpl implements CarService {
             CustomerServiceRecord customerServiceRecord = CustomerServiceRecord.builder()
                     .serviceName(serviceEntity.getServiceName())
                     .serviceNameAz(serviceEntity.getNameAz())
+                    .serviceNameEn(serviceEntity.getNameEn())
                     .serviceNameRu(serviceEntity.getNameRu())
                     .actionType(serviceEntity.getActionType())
                     .serviceId(serviceEntity.getId())
@@ -1228,24 +1245,39 @@ public class CarServiceImpl implements CarService {
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
-        ServiceEntity serviceEntity = serviceEntityRepository.findByServiceNameAndActionType(request.getServiceName(), request.getActionType());
+        ServiceEntity serviceEntity = request.getServiceId() != null
+                ? serviceEntityRepository.findById(request.getServiceId()).orElse(null)
+                : serviceEntityRepository.findByServiceNameAndActionType(request.getServiceName(), request.getActionType());
 
         if (serviceEntity == null) {
             throw new ResourceNotFoundException(EnumMessagesLangValues.SERVICE_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
-        CustomerServiceRecord existingRecord = customerServiceRecordRepository.findByServiceNameAndActionTypeAndCar(request.getServiceName(), request.getActionType(), car);
+        CustomerServiceRecord existingRecord = customerServiceRecordRepository.findByServiceIdAndCar(serviceEntity.getId(), car);
         if (existingRecord != null) {
             throw new ResourceNotFoundException(EnumMessagesLangValues.RECORD_ALREADY_EXISTS.getMessageByLang(acceptLanguage));
         }
         CustomerServiceRecord record = CustomerServiceRecord.builder()
-                .serviceName(request.getServiceName())
-                .actionType(request.getActionType())
+                .serviceName(serviceEntity.getServiceName())
+                .serviceNameAz(serviceEntity.getNameAz())
+                .serviceNameEn(serviceEntity.getNameEn())
+                .serviceNameRu(serviceEntity.getNameRu())
+                .actionType(serviceEntity.getActionType())
+                .serviceId(serviceEntity.getId())
                 .doneDate(request.getDoneDate())
                 .doneKm(request.getDoneKm())
                 .car(car)
                 .build();
         customerServiceRecordRepository.save(record);
         return RecordResponse.builder()
+                .id(record.getId())
+                .serviceId(record.getServiceId())
+                .serviceName(record.getServiceName())
+                .serviceNameAz(record.getServiceNameAz())
+                .serviceNameEn(record.getServiceNameEn())
+                .serviceNameRu(record.getServiceNameRu())
+                .actionType(record.getActionType())
+                .doneDate(record.getDoneDate())
+                .doneKm(record.getDoneKm())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .build();
     }
@@ -1300,6 +1332,15 @@ public class CarServiceImpl implements CarService {
         log.info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
 
         return RecordResponse.builder()
+                .id(record.getId())
+                .serviceId(record.getServiceId())
+                .serviceName(record.getServiceName())
+                .serviceNameAz(record.getServiceNameAz())
+                .serviceNameEn(record.getServiceNameEn())
+                .serviceNameRu(record.getServiceNameRu())
+                .actionType(record.getActionType())
+                .doneDate(record.getDoneDate())
+                .doneKm(record.getDoneKm())
                 .servicedStatus(record.getServicedStatus())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .build();
@@ -1307,8 +1348,9 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public RecordResponse getRecord(RecordRequest request, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage) {
-        if (request == null || request.getCarId() == null || request.getServiceName() == null || phoneNumber == null
-                || userIdHeader == null) {
+        if (request == null || request.getCarId() == null
+                || (request.getServiceId() == null && request.getServiceName() == null)
+                || phoneNumber == null || userIdHeader == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
 
@@ -1325,7 +1367,9 @@ public class CarServiceImpl implements CarService {
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
-        CustomerServiceRecord record = customerServiceRecordRepository.findByServiceNameAndCar(request.getServiceName(), car);
+        CustomerServiceRecord record = request.getServiceId() != null
+                ? customerServiceRecordRepository.findByServiceIdAndCar(request.getServiceId(), car)
+                : customerServiceRecordRepository.findByServiceNameAndCar(request.getServiceName(), car);
 
         if (record == null) {
             throw new ResourceNotFoundException(EnumMessagesLangValues.RECORD_NOT_FOUND.getMessageByLang(acceptLanguage));
@@ -1334,9 +1378,11 @@ public class CarServiceImpl implements CarService {
 
         return RecordResponse.builder()
                 .id(record.getId())
+                .serviceId(record.getServiceId())
                 .serviceName(record.getServiceName())
                 .serviceNameAz(record.getServiceNameAz())
                 .serviceNameRu(record.getServiceNameRu())
+                .serviceNameEn(record.getServiceNameEn())
                 .actionType(record.getActionType())
                 .doneDate(record.getDoneDate())
                 .doneKm(record.getDoneKm())

@@ -14,7 +14,11 @@ import java.time.LocalDate;
 @Builder
 public class CarServicePercentageResponse {
     Long percentageId;
+    Long serviceId;
     String serviceName;
+    String serviceNameAz;
+    String serviceNameEn;
+    String serviceNameRu;
     String actionType;
 
     Long intervalKm;

@@ -15,6 +15,7 @@ public class RecordRequest {
     Long carId;
     String vin;
     Long recordId;
+    Long serviceId;
     String serviceName;
     String actionType;
     LocalDate doneDate;

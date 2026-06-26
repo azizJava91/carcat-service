@@ -11,6 +11,8 @@ import java.util.List;
 public interface CustomerServiceRecordRepository extends JpaRepository<CustomerServiceRecord,Long> {
     CustomerServiceRecord findByServiceNameAndCar(String serviceName, Car car);
 
+    CustomerServiceRecord findByServiceIdAndCar(Long serviceId, Car car);
+
     CustomerServiceRecord findByIdAndCar(Long recordId, Car car);
 
     CustomerServiceRecord findByServiceNameAndActionTypeAndCar(String serviceName, String actionType, Car car);

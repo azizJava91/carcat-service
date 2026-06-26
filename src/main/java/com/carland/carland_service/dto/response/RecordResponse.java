@@ -15,9 +15,11 @@ import java.time.LocalDate;
 public class RecordResponse {
 
     Long id;
+    Long serviceId;
     String serviceName;
     String serviceNameAz;
     String serviceNameRu;
+    String serviceNameEn;
     String actionType;
     LocalDate doneDate;
     Integer doneKm;
