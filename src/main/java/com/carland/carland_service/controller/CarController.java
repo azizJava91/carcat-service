@@ -199,15 +199,15 @@ public class CarController {
 
     }
 
-    @GetMapping("/{vin}/service-history")
-    public CarVinServiceHistoryResponse getServiceHistoryByVin(@PathVariable String vin,
-                                                                @RequestHeader("phoneNumber") String phoneNumber,
-                                                                @RequestHeader("X-User-Id") String userIdHeader,
-                                                                @RequestHeader("Accept-Language") String acceptLanguage) {
-        return carVinHistoryService.getServiceHistoryByVin(vin, phoneNumber, userIdHeader, acceptLanguage);
-    }
+//    @GetMapping("/{vin}/service-history")
+//    public CarVinServiceHistoryResponse getServiceHistoryByVin(@PathVariable String vin,
+//                                                                @RequestHeader("phoneNumber") String phoneNumber,
+//                                                                @RequestHeader("X-User-Id") String userIdHeader,
+//                                                                @RequestHeader("Accept-Language") String acceptLanguage) {
+//        return carVinHistoryService.getServiceHistoryByVin(vin, phoneNumber, userIdHeader, acceptLanguage);
+//    }
 
-    @GetMapping("/{vin}/service-history/v2")
+    @GetMapping("/{vin}/service-history")
     public CarVinServiceHistoryV2Response getServiceHistoryByVinV2(@PathVariable String vin,
                                                                    @RequestHeader("phoneNumber") String phoneNumber,
                                                                    @RequestHeader("X-User-Id") String userIdHeader,
