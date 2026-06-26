@@ -253,6 +253,10 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
         Set<Long> seenRecordIds = new HashSet<>();
         BigDecimal allTimeCost = BigDecimal.ZERO;
 
+        Partner hyperPartner = partnerLookupService.find(HYPER_PARTNER).orElse(null);
+        Long partnerId = HYPER_PARTNER.getId();
+        String partnerName = hyperPartner != null ? hyperPartner.getName() : HYPER_PARTNER.getDefaultName();
+
         for (HyperServiceHistoryItemResponse item : items) {
             if (item.getRecordId() == null) {
                 log.warn("Skipping Hyper visit without recordId for carId={}", car.getCarId());
@@ -272,7 +276,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 continue;
             }
 
-            Visit visit = mapHyperItemToVisit(car, item);
+            Visit visit = mapHyperItemToVisit(car, item, partnerId, partnerName);
             Visit saved = visitRepository.save(visit);
             persisted.add(saved);
         }
@@ -298,11 +302,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
         return BigDecimal.ZERO;
     }
 
-    private Visit mapHyperItemToVisit(Car car, HyperServiceHistoryItemResponse item) {
-        Partner partner = partnerLookupService.find(HYPER_PARTNER).orElse(null);
-        Long partnerId = HYPER_PARTNER.getId();
-        String partnerName = partner != null ? partner.getName() : HYPER_PARTNER.getDefaultName();
-
+    private Visit mapHyperItemToVisit(Car car, HyperServiceHistoryItemResponse item, Long partnerId, String partnerName) {
         Visit visit = Visit.builder()
                 .car(car)
                 .hyperRecordId(item.getRecordId())
