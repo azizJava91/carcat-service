@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 public class ServiceHistoryLineV2Response {
     private Integer serviceCode;
-    private Long universalServiceId;
+    private String universalServiceId;
     private String serviceName;
     private MoneyResponse cost;
     private LocalDate nextServiceDate;

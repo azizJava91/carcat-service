@@ -99,6 +99,17 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(responseException, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ResponseException> handleConflictException(ConflictException ex) {
+        ResponseException responseException=ResponseException.builder()
+                .error("Conflict error")
+                .message(ex.getMessage())
+                .timeStamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .build();
+        return new ResponseEntity<>(responseException, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(InviteException.class)
     public ResponseEntity<ResponseException> handleAlreadyExistsExceptionException(InviteException ex) {
         ResponseException responseException=ResponseException.builder()

@@ -36,6 +36,7 @@ public class CarServicePercentageResponse {
     Integer nextServiceKm;
     String nextServiceDate;
     String status;
+    Boolean editable;
     String servicedStatus;
     boolean important;
 }

@@ -9,14 +9,18 @@ import com.carland.carland_service.enums.ColorTranslation;
 import com.carland.carland_service.enums.EngineTypeTranslation;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
 import com.carland.carland_service.enums.EnumUserStatus;
+import com.carland.carland_service.enums.PercentageStatus;
 import com.carland.carland_service.exceptions.*;
 import com.carland.carland_service.repository.*;
+import com.carland.carland_service.service.AfterAddCarSyncService;
 import com.carland.carland_service.service.interfaces.CarService;
 import com.carland.carland_service.service.interfaces.PushNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +50,7 @@ public class CarServiceImpl implements CarService {
     private final PushNotificationService pushNotificationService;
     private final LogRepository logRepository;
     private final EngineTypeRepository engineTypeRepository;
+    private final AfterAddCarSyncService afterAddCarSyncService;
 //    private static final List<String> simulatedVins = List.of(
 //            "JTJGB7CX2R4121777",
 //            "LFMAAA0C6S0640604",
@@ -418,7 +423,10 @@ public class CarServiceImpl implements CarService {
 
             Percentage percentage = percentageRepository.findByServiceIdAndCarId(serviceEntity.getId(), car.getCarId());
 
-            boolean useEditedPercentage = percentage != null && "EDITED".equalsIgnoreCase(percentage.getStatus());
+            PercentageStatus listStatus = percentage != null
+                    ? PercentageStatus.fromStored(percentage.getStatus())
+                    : PercentageStatus.CREATED;
+            boolean useEditedPercentage = percentage != null && listStatus.isManuallySet();
 
             // ===================== EDITED FLOW =====================
             if (useEditedPercentage) {
@@ -493,7 +501,8 @@ public class CarServiceImpl implements CarService {
                                 .lastServiceDate(lastServiceDate != null ? capitalizeMonth(lastServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
                                 .nextServiceKm(nextServiceKm)
                                 .nextServiceDate(nextServiceDate != null ? capitalizeMonth(nextServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
-                                .status(percentage.getStatus())
+                                .status(listStatus.name())
+                                .editable(listStatus.isEditable())
                                 .servicedStatus(record != null ? record.getServicedStatus() : null)
                                 .important(percentage.isImportant())
                                 .build()
@@ -602,7 +611,8 @@ public class CarServiceImpl implements CarService {
                             .lastServiceDate(capitalizeMonth(lastServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)))
                             .nextServiceKm(nextServiceKm)
                             .nextServiceDate(nextServiceDate != null ? capitalizeMonth(nextServiceDate.format(formatter), Locale.forLanguageTag(acceptLanguage)) : null)
-                            .status(percentage != null ? percentage.getStatus() : null)
+                            .status(listStatus.name())
+                            .editable(listStatus.isEditable())
                             .servicedStatus(record != null ? record.getServicedStatus() : null)
                             .important(percentage != null ? percentage.isImportant() : serviceEntity.isImportant())
                             .build()
@@ -652,6 +662,12 @@ public class CarServiceImpl implements CarService {
             throw new ResourceNotFoundException("Hesablama bu avtomobile aid deyil");
         }
 
+        // Partner-locked percentages cannot be edited by the customer (backend enforcement).
+        if (PercentageStatus.fromStored(percentage.getStatus()) == PercentageStatus.EDITED_BY_PARTNER) {
+            log.warn("editPercentage rejected: percentage is partner-locked | percentageId={}", percentage.getId());
+            throw new ConflictException("Bu hesablama partnyor tərəfindən yenilənib və redaktə edilə bilməz");
+        }
+
         if (request.getLastServiceKm() != null) {
             percentage.setLastServiceKm(request.getLastServiceKm());
         }
@@ -664,7 +680,7 @@ public class CarServiceImpl implements CarService {
         if (request.getNextServiceDate() != null) {
             percentage.setNextServiceDate(request.getNextServiceDate());
         }
-        percentage.setStatus("EDITED");
+        percentage.setStatus(PercentageStatus.EDITED_BY_CUSTOMER.name());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy", Locale.forLanguageTag(acceptLanguage));
 
@@ -692,6 +708,8 @@ public class CarServiceImpl implements CarService {
                 .lastServiceDate(percentage.getLastServiceDate() != null ? percentage.getLastServiceDate().format(formatter) : null)
                 .nextServiceKm(percentage.getNextServiceKm())
                 .nextServiceDate(percentage.getNextServiceDate() != null ? percentage.getNextServiceDate().format(formatter) : null)
+                .status(PercentageStatus.fromStored(percentage.getStatus()).name())
+                .editable(PercentageStatus.fromStored(percentage.getStatus()).isEditable())
                 .important(percentage.isImportant())
                 .build();
         log.info("response: {}", response);
@@ -760,8 +778,9 @@ public class CarServiceImpl implements CarService {
                 percentage.setServiceNameRu(service.getNameRu());
             }
 
-            //  EDITED olsa birbasa hesablamadan db den versin manipulation olmasin update , save olmasin
-            if ("EDITED".equalsIgnoreCase(percentage.getStatus())) {
+            //  Customer/partner tarafindan set edilibse, birbasa db deki degerleri ver, yeniden hesablama
+            PercentageStatus execStatus = PercentageStatus.fromStored(percentage.getStatus());
+            if (execStatus.isManuallySet()) {
 
                 responseList.add(
                         CarServicePercentageResponse.builder()
@@ -794,6 +813,8 @@ public class CarServiceImpl implements CarService {
                                                 ? percentage.getNextServiceDate().format(formatter)
                                                 : null
                                 )
+                                .status(execStatus.name())
+                                .editable(execStatus.isEditable())
                                 .important(percentage.isImportant())
                                 .build()
                 );
@@ -887,6 +908,8 @@ public class CarServiceImpl implements CarService {
                             .lastServiceDate(lastServiceDate.format(formatter))
                             .nextServiceKm(nextServiceKm)
                             .nextServiceDate(nextServiceDate.format(formatter))
+                            .status(PercentageStatus.CREATED.name())
+                            .editable(true)
                             .important(percentage.isImportant())
                             .build()
             );
@@ -900,7 +923,7 @@ public class CarServiceImpl implements CarService {
             percentage.setRemainingMonths(nextServiceDate);
             percentage.setKmPercentage(remainingKmPercentage);
             percentage.setMonthPercentage(remainingMonthPercentage);
-            percentage.setStatus("CREATED");
+            percentage.setStatus(PercentageStatus.CREATED.name());
             percentageRepository.save(percentage);
         }
 
@@ -1049,7 +1072,7 @@ public class CarServiceImpl implements CarService {
                     .actionType(serviceEntity.getActionType())
                     .serviceId(serviceEntity.getId())
                     .important(serviceEntity.isImportant())
-                    .status("CREATED")
+                    .status(PercentageStatus.CREATED.name())
                     .carId(newCar.getCarId())
                     .build();
 
@@ -1081,9 +1104,29 @@ public class CarServiceImpl implements CarService {
 
         log.info("[addCar] calling convertCarEntityToResponse | carId={}, resource=fromDecoderTool", newCar.getCarId());
         CarResponse response = convertCarEntityToResponse(newCar, acceptLanguage, "fromDecoderTool");
+
+        // Fire percentage calculation + Hyper partner sync only AFTER the car is committed,
+        // and only asynchronously: addCar must never depend on Hyper availability.
+        triggerAfterAddCarSync(newCar.getCarId(), newCar.getVin(), phoneNumber, userIdHeader, timezone, acceptLanguage);
+
         log.info("[addCar] END success (new car) | carId={}, vin={}, plateNumber={}",
                 response.getCarId(), response.getVin(), response.getPlateNumber());
         return response;
+    }
+
+    /** Schedules the async percentage + Hyper sync to run after the addCar transaction commits. */
+    private void triggerAfterAddCarSync(Long carId, String vin, String phoneNumber,
+                                        String userIdHeader, String timezone, String acceptLanguage) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    afterAddCarSyncService.syncAfterAddCar(carId, vin, phoneNumber, userIdHeader, timezone, acceptLanguage);
+                }
+            });
+        } else {
+            afterAddCarSyncService.syncAfterAddCar(carId, vin, phoneNumber, userIdHeader, timezone, acceptLanguage);
+        }
     }
 
     @Override

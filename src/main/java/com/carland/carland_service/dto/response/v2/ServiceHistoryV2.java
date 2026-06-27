@@ -33,8 +33,8 @@ public class ServiceHistoryV2 {
 
     private String serviceName;
 
-    /** CarCat ServiceEntity id from Hyper. */
-    private Long universalServiceId;
+    /** Hyper universalServiceId, stored raw exactly as Hyper sends it. */
+    private String universalServiceId;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "service_groups", columnDefinition = "jsonb")

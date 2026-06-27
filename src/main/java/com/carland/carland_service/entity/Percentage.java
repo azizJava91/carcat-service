@@ -59,5 +59,11 @@ public class Percentage {
 
     LocalDateTime lastNotificationSentAt;
 
+    /** Last time partner (Hyper) data was applied to this percentage. */
+    LocalDateTime lastPartnerSyncAt;
+
+    /** Hyper visit recordId that was last applied; used for idempotent partner sync. */
+    String partnerRecordId;
+
 
 }

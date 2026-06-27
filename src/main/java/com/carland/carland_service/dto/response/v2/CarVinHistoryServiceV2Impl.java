@@ -4,7 +4,6 @@ import com.carland.carland_service.dto.response.hyper.HyperCostResponse;
 import com.carland.carland_service.dto.response.hyper.HyperServiceHistoryItemResponse;
 import com.carland.carland_service.dto.response.hyper.HyperServiceLineResponse;
 import com.carland.carland_service.dto.response.hyper.HyperServicePartResponse;
-import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinMockData;
 import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinResponse;
 import com.carland.carland_service.entity.Car;
 import com.carland.carland_service.entity.Customer;
@@ -231,9 +230,6 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
     }
 
     private HyperVehicleByVinResponse fetchHyperHistory(String vin) {
-        return HyperVehicleByVinMockData.load(vin);
-
-        /*
         String token = hyperTokenService.getToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
@@ -252,7 +248,6 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
             }
             throw e;
         }
-        */
     }
 
     private List<Visit> persistHyperVisits(Car car, List<HyperServiceHistoryItemResponse> items) {
@@ -359,7 +354,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
         return ServiceHistoryV2.builder()
                 .serviceCode(line.getServiceCode())
                 .serviceName(line.getServiceName())
-                .universalServiceId(parseUniversalServiceId(line.getUniversalServiceId()))
+                .universalServiceId(normalizeUniversalServiceId(line.getUniversalServiceId()))
                 .serviceGroups(line.getServiceGroups() != null ? new ArrayList<>(line.getServiceGroups()) : new ArrayList<>())
                 .costAmount(line.getCost() != null ? line.getCost().getAmount() : null)
                 .costCurrency(line.getCost() != null ? line.getCost().getCurrency() : null)
@@ -368,15 +363,11 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .build();
     }
 
-    private Long parseUniversalServiceId(String raw) {
-        if (raw == null || raw.isBlank() || "other".equalsIgnoreCase(raw)) {
+    /** Keep Hyper's universalServiceId raw; only trim and drop the explicit "other" placeholder. */
+    private String normalizeUniversalServiceId(String raw) {
+        if (raw == null || raw.isBlank() || "other".equalsIgnoreCase(raw.trim())) {
             return null;
         }
-        try {
-            return Long.parseLong(raw.trim());
-        } catch (NumberFormatException e) {
-            log.debug("Non-numeric universalServiceId from Hyper, skipping: {}", raw);
-            return null;
-        }
+        return raw.trim();
     }
 }
