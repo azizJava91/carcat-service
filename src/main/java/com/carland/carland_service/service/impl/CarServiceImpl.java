@@ -657,6 +657,9 @@ public class CarServiceImpl implements CarService {
                     log.error("Percentage tapılmadı. ID: {}", request.getPercentageId());
                     return new ResourceNotFoundException("Hesablama tapilmadi");
                 });
+        log.info("[pct-status-debug] editPercentage START | carId={}, percentageId={}, serviceId={}, serviceName={}, statusBefore={}, thread={}",
+                request.getCarId(), percentage.getId(), percentage.getServiceId(), percentage.getServiceName(),
+                percentage.getStatus(), Thread.currentThread().getName());
         if (!percentage.getCarId().equals(car.getCarId())) {
             log.error("Hesablama bu avtomobile aid deyil");
             throw new ResourceNotFoundException("Hesablama bu avtomobile aid deyil");
@@ -685,6 +688,9 @@ public class CarServiceImpl implements CarService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, yyyy", Locale.forLanguageTag(acceptLanguage));
 
         percentageRepository.save(percentage);
+        log.info("[pct-status-debug] editPercentage SAVED | carId={}, percentageId={}, serviceName={}, statusAfter={}, thread={}",
+                car.getCarId(), percentage.getId(), percentage.getServiceName(),
+                percentage.getStatus(), Thread.currentThread().getName());
 
         CarServicePercentageResponse response = CarServicePercentageResponse.builder()
                 .percentageId(percentage.getId())
@@ -754,6 +760,15 @@ public class CarServiceImpl implements CarService {
                     EnumMessagesLangValues.SERVICE_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
+        log.info("[pct-status-debug] executeServicePercentages START | carId={}, vin={}, count={}, thread={}",
+                car.getCarId(), car.getVin(), percentages.size(), Thread.currentThread().getName());
+        percentages.forEach(p -> log.info(
+                "[pct-status-debug] execute snapshot at load | carId={}, percentageId={}, serviceId={}, serviceName={}, status={}",
+                car.getCarId(), p.getId(), p.getServiceId(), p.getServiceName(), p.getStatus()));
+
+        int recomputeSavedCount = 0;
+        int manualPreservedCount = 0;
+
         /* ===== Locale & Date Formatter ===== */
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.forLanguageTag(acceptLanguage));
         List<CarServicePercentageResponse> responseList = new ArrayList<>();
@@ -781,6 +796,10 @@ public class CarServiceImpl implements CarService {
             //  Customer/partner tarafindan set edilibse, birbasa db deki degerleri ver, yeniden hesablama
             PercentageStatus execStatus = PercentageStatus.fromStored(percentage.getStatus());
             if (execStatus.isManuallySet()) {
+                log.info("[pct-status-debug] execute SKIP recompute (manual status preserved) | carId={}, percentageId={}, serviceName={}, status={}, thread={}",
+                        car.getCarId(), percentage.getId(), percentage.getServiceName(), execStatus.name(),
+                        Thread.currentThread().getName());
+                manualPreservedCount++;
 
                 responseList.add(
                         CarServicePercentageResponse.builder()
@@ -825,6 +844,12 @@ public class CarServiceImpl implements CarService {
 
                 continue;
             }
+
+            String statusAtSnapshot = percentage.getStatus();
+            log.info("[pct-status-debug] execute RECOMPUTE branch | carId={}, percentageId={}, serviceName={}, statusAtSnapshot={}, thread={}",
+                    car.getCarId(), percentage.getId(), percentage.getServiceName(), statusAtSnapshot,
+                    Thread.currentThread().getName());
+
             CustomerServiceRecord customerRecord =
                     customerServiceRecordRepository
                             .findByServiceIdAndCar(percentage.getServiceId(), car);
@@ -924,8 +949,25 @@ public class CarServiceImpl implements CarService {
             percentage.setKmPercentage(remainingKmPercentage);
             percentage.setMonthPercentage(remainingMonthPercentage);
             percentage.setStatus(PercentageStatus.CREATED.name());
+
+            // Diagnostic only: detect stale snapshot overwriting a customer/partner edit (Variant A race).
+            percentageRepository.findById(percentage.getId()).ifPresent(fresh -> {
+                PercentageStatus dbStatus = PercentageStatus.fromStored(fresh.getStatus());
+                if (dbStatus.isManuallySet()) {
+                    log.warn("[pct-status-debug] RACE_OR_STALE_SNAPSHOT | execute will write CREATED but DB already has {} | carId={}, percentageId={}, serviceName={}, statusAtSnapshot={}, thread={}",
+                            dbStatus.name(), car.getCarId(), percentage.getId(), percentage.getServiceName(),
+                            statusAtSnapshot, Thread.currentThread().getName());
+                }
+            });
+
             percentageRepository.save(percentage);
+            recomputeSavedCount++;
+            log.info("[pct-status-debug] execute SAVED recompute as CREATED | carId={}, percentageId={}, serviceName={}, thread={}",
+                    car.getCarId(), percentage.getId(), percentage.getServiceName(), Thread.currentThread().getName());
         }
+
+        log.info("[pct-status-debug] executeServicePercentages END | carId={}, recomputeSaved={}, manualPreserved={}, thread={}",
+                car.getCarId(), recomputeSavedCount, manualPreservedCount, Thread.currentThread().getName());
 
         return PercentageResponseMain.builder()
                 .carId(car.getCarId())
@@ -1117,14 +1159,17 @@ public class CarServiceImpl implements CarService {
     /** Schedules the async percentage + Hyper sync to run after the addCar transaction commits. */
     private void triggerAfterAddCarSync(Long carId, String vin, String phoneNumber,
                                         String userIdHeader, String timezone, String acceptLanguage) {
+        log.info("[pct-status-debug] addCar scheduling async sync after commit | carId={}, vin={}", carId, vin);
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
+                    log.info("[pct-status-debug] addCar afterCommit fired, starting async sync | carId={}, vin={}", carId, vin);
                     afterAddCarSyncService.syncAfterAddCar(carId, vin, phoneNumber, userIdHeader, timezone, acceptLanguage);
                 }
             });
         } else {
+            log.info("[pct-status-debug] addCar no active tx sync, starting async sync immediately | carId={}, vin={}", carId, vin);
             afterAddCarSyncService.syncAfterAddCar(carId, vin, phoneNumber, userIdHeader, timezone, acceptLanguage);
         }
     }

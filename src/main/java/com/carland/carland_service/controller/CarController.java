@@ -117,7 +117,8 @@ public class CarController {
                                                             @RequestHeader("X-Client-Timezone") String timezone,
                                                             @RequestHeader("Accept-Language") String acceptLanguage) {
 
-        System.err.println("/service/execute/percentages cagrildi");
+        System.err.println("[pct-status-debug] HTTP PUT /service/execute/percentages | carId=" + carId
+                + ", userId=" + userIdHeader + ", thread=" + Thread.currentThread().getName());
         return carService.executeServicePercentages(carId, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
@@ -142,7 +143,9 @@ public class CarController {
                                                        @RequestHeader("X-Client-Timezone") String timezone,
                                                        @RequestHeader("Accept-Language") String acceptLanguage) {
 
-        System.err.println("/service/edit/percentage cagrildi");
+        System.err.println("[pct-status-debug] HTTP PUT /service/edit/percentage | carId=" + request.getCarId()
+                + ", percentageId=" + request.getPercentageId() + ", userId=" + userIdHeader
+                + ", thread=" + Thread.currentThread().getName());
         return carService.editPercentage(request, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
