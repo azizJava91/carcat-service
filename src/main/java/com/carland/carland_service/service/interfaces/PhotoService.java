@@ -24,9 +24,7 @@ public interface PhotoService {
     ResponseEntity<byte[]> getUserPP(String role, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage);
 
 
+    PhotoResponse uploadPartnerPhoto(MultipartFile file, Long partnerId);
 
-
-
-
-
+    ResponseEntity<byte[]> getPartnerPhotoById(Long partnerId);
 }

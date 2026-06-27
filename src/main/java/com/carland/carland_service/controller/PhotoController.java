@@ -28,6 +28,7 @@ public class PhotoController {
         return photoService.uploadCarPhoto(file, carId, role, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
+
     @DeleteMapping("/for/car/delete")
     public PhotoResponse deleteCarPhoto(@RequestHeader("role") String role,
                                         @RequestParam("carId") Long carId,
@@ -48,6 +49,19 @@ public class PhotoController {
             @RequestHeader("Accept-Language") String acceptLanguage) {
 
         return photoService.getCarPhoto(role, carId, phoneNumber, userIdHeader, timezone, acceptLanguage);
+    }
+
+    @PostMapping(value = "/for/partner/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public PhotoResponse uploadPartnerPhoto(@RequestPart("file") MultipartFile file,
+                                            @RequestParam("partnerId") Long partnerId) {
+        return photoService.uploadPartnerPhoto(file, partnerId);
+//        return null;
+    }
+
+    @GetMapping(value = "/for/partner/get/{partnerId}", produces = MediaType.ALL_VALUE)
+    public ResponseEntity<byte[]> getPartnerPhotoById(@PathVariable("partnerId") Long partnerId) {
+        return photoService.getPartnerPhotoById(partnerId);
+//        return null;
     }
 
 

@@ -81,5 +81,10 @@ public class PhotoController {
         return photoService.getUserPP(role, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
+    @GetMapping(value = "/for/partner/get/{partnerId}", produces = MediaType.ALL_VALUE)
+    public ResponseEntity<byte[]> getPartnerPhotoById(@PathVariable("partnerId") Long partnerId) {
+        return photoService.getPartnerPhotoById(partnerId);
+    }
+
 
 }

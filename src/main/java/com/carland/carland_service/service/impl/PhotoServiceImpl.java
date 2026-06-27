@@ -1,18 +1,12 @@
 package com.carland.carland_service.service.impl;
 
 import com.carland.carland_service.dto.response.PhotoResponse;
-import com.carland.carland_service.entity.Car;
-import com.carland.carland_service.entity.CarPhoto;
-import com.carland.carland_service.entity.Customer;
-import com.carland.carland_service.entity.UserPhoto;
+import com.carland.carland_service.entity.*;
 import com.carland.carland_service.enums.EnumMessagesLangValues;
 import com.carland.carland_service.enums.EnumUserRoles;
 import com.carland.carland_service.enums.EnumUserStatus;
 import com.carland.carland_service.exceptions.*;
-import com.carland.carland_service.repository.CarPhotoRepository;
-import com.carland.carland_service.repository.CarRepository;
-import com.carland.carland_service.repository.CustomerRepository;
-import com.carland.carland_service.repository.UserPhotoRepository;
+import com.carland.carland_service.repository.*;
 import com.carland.carland_service.service.interfaces.PhotoService;
 
 import com.carland.carland_service.util.CustomImageCrop;
@@ -37,7 +31,8 @@ public class PhotoServiceImpl implements PhotoService {
     private final CustomerRepository customerRepository;
     private final CarRepository carRepository;
     private final UserPhotoRepository userPhotoRepository;
-
+    private final PartnerRepository partnerRepository;
+    private final PartnerPhotoRepository partnerPhotoRepository;
     @Override
     public ResponseEntity<byte[]> getCarPhoto(
             String role,
@@ -106,6 +101,83 @@ public class PhotoServiceImpl implements PhotoService {
         return ResponseEntity.ok()
                 .contentType(mediaType)
                 .body(userPhoto.getImageData());
+    }
+
+    @Override
+    @Transactional
+    public PhotoResponse uploadPartnerPhoto(MultipartFile file, Long partnerId) {
+        if (file == null || partnerId == null) {
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(null));
+        }
+
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Avto Servis tapilmadi"));
+
+        try {
+            checkAttack(file, null);
+
+            PartnerPhoto existPhoto = partnerPhotoRepository.findByPartnerId(partner.getId());
+
+            if (existPhoto != null) {
+                partnerPhotoRepository.delete(existPhoto);
+            }
+
+            Tika tika = new Tika();
+            String detectedType = tika.detect(file.getBytes());
+
+            if (!detectedType.startsWith("image/")) {
+                throw new InvalidStatusException(EnumMessagesLangValues.INVALID_PHOTO_FORMAT.getMessageByLang(null));
+            }
+
+            String fileType = detectedType.substring("image/".length());
+
+            PartnerPhoto partnerPhoto = PartnerPhoto.builder()
+                    .fileName("partner " + partner.getId() + " image")
+                    .fileType(fileType)
+                    .partnerId(partner.getId())
+                    .imageData(file.getBytes())
+                    .build();
+
+            partnerPhotoRepository.save(partnerPhoto);
+
+            return PhotoResponse.builder()
+                    .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(null))
+                    .build();
+        } catch (IOException e) {
+            throw new FileStorageException(EnumMessagesLangValues.FILE_CANT_SET.getMessageByLang(null));
+        }
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getPartnerPhotoById(Long partnerId) {
+        if (partnerId == null) {
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(null));
+        }
+
+        PartnerPhoto partnerPhoto = partnerPhotoRepository.findByPartnerId(partnerId);
+
+        if (partnerPhoto == null) {
+            throw new ResourceNotFoundException(
+                    EnumMessagesLangValues.PHOTO_NOT_FOUND.getMessageByLang(null));
+        }
+
+        String fileType = partnerPhoto.getFileType();
+        log.info("file type ============================== {}", fileType);
+
+        if (fileType == null || fileType.isBlank()) {
+            fileType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+
+        if (!fileType.contains("/")) {
+            fileType = "image/" + fileType.toLowerCase();
+        }
+
+        MediaType mediaType = MediaType.parseMediaType(fileType);
+        log.info("media type file type ================= {}", mediaType.getType());
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(partnerPhoto.getImageData());
     }
 
 
