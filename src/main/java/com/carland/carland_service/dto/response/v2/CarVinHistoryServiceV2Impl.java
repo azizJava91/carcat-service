@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Map;
@@ -89,6 +90,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
         List<Visit> cachedVisits = loadCachedVisits(car);
         if (cachedVisits != null) {
             hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
+            refreshServicedPartnerIds(car);
             return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
         }
 
@@ -96,6 +98,7 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
             cachedVisits = loadCachedVisits(car);
             if (cachedVisits != null) {
                 hyperPercentageSyncService.syncFromVisits(car, cachedVisits);
+                refreshServicedPartnerIds(car);
                 return buildResponse(car, vin, CACHE_SOURCE, cachedVisits, acceptLanguage);
             }
 
@@ -106,8 +109,38 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
 
             List<Visit> persisted = persistHyperVisits(car, hyperResponse.getServiceHistory());
             hyperPercentageSyncService.syncFromVisits(car, persisted);
+            refreshServicedPartnerIds(car);
             return buildResponse(car, vin, LIVE_SOURCE, persisted, acceptLanguage);
         }
+    }
+
+    /**
+     * Keeps {@link Car#getServicedPartnerIds()} in sync with persisted visits.
+     * Order: partners by most recent service date (newest visit's partner first).
+     */
+    private void refreshServicedPartnerIds(Car car) {
+        if (!visitRepository.existsByCar(car)) {
+            return;
+        }
+
+        List<Visit> allVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
+        LinkedHashSet<String> orderedPartnerIds = new LinkedHashSet<>();
+        for (Visit visit : allVisits) {
+            Long partnerId = visit.getServiceCenterId();
+            if (partnerId != null) {
+                orderedPartnerIds.add(String.valueOf(partnerId));
+            }
+        }
+
+        List<String> updated = new ArrayList<>(orderedPartnerIds);
+        List<String> current = car.getServicedPartnerIds();
+        if (current != null && current.equals(updated)) {
+            return;
+        }
+
+        car.setServicedPartnerIds(updated);
+        carRepository.save(car);
+        log.info("Updated servicedPartnerIds | carId={}, partnerIds={}", car.getCarId(), updated);
     }
 
     /** Returns visits when cache exists; null when DB has no visits for this car (cheap exists check first). */

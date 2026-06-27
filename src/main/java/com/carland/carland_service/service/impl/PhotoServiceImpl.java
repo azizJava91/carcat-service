@@ -33,6 +33,7 @@ public class PhotoServiceImpl implements PhotoService {
     private final UserPhotoRepository userPhotoRepository;
     private final PartnerRepository partnerRepository;
     private final PartnerPhotoRepository partnerPhotoRepository;
+    private final PartnerBadgeLogoRepository partnerBadgeLogoRepository;
     @Override
     public ResponseEntity<byte[]> getCarPhoto(
             String role,
@@ -178,6 +179,83 @@ public class PhotoServiceImpl implements PhotoService {
         return ResponseEntity.ok()
                 .contentType(mediaType)
                 .body(partnerPhoto.getImageData());
+    }
+
+    @Override
+    @Transactional
+    public PhotoResponse uploadPartnerBadgeLogo(MultipartFile file, Long partnerId) {
+        if (file == null || partnerId == null) {
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(null));
+        }
+
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Avto Servis tapilmadi"));
+
+        try {
+            checkAttack(file, null);
+
+            PartnerBadgeLogo existLogo = partnerBadgeLogoRepository.findByPartnerId(partner.getId());
+
+            if (existLogo != null) {
+                partnerBadgeLogoRepository.delete(existLogo);
+            }
+
+            Tika tika = new Tika();
+            String detectedType = tika.detect(file.getBytes());
+
+            if (!detectedType.startsWith("image/")) {
+                throw new InvalidStatusException(EnumMessagesLangValues.INVALID_PHOTO_FORMAT.getMessageByLang(null));
+            }
+
+            String fileType = detectedType.substring("image/".length());
+
+            PartnerBadgeLogo partnerBadgeLogo = PartnerBadgeLogo.builder()
+                    .fileName("partner " + partner.getId() + " badge logo")
+                    .fileType(fileType)
+                    .partnerId(partner.getId())
+                    .imageData(file.getBytes())
+                    .build();
+
+            partnerBadgeLogoRepository.save(partnerBadgeLogo);
+
+            return PhotoResponse.builder()
+                    .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(null))
+                    .build();
+        } catch (IOException e) {
+            throw new FileStorageException(EnumMessagesLangValues.FILE_CANT_SET.getMessageByLang(null));
+        }
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getPartnerBadgeLogoById(Long partnerId) {
+        if (partnerId == null) {
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(null));
+        }
+
+        PartnerBadgeLogo partnerBadgeLogo = partnerBadgeLogoRepository.findByPartnerId(partnerId);
+
+        if (partnerBadgeLogo == null) {
+            throw new ResourceNotFoundException(
+                    EnumMessagesLangValues.PHOTO_NOT_FOUND.getMessageByLang(null));
+        }
+
+        String fileType = partnerBadgeLogo.getFileType();
+        log.info("file type ============================== {}", fileType);
+
+        if (fileType == null || fileType.isBlank()) {
+            fileType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+
+        if (!fileType.contains("/")) {
+            fileType = "image/" + fileType.toLowerCase();
+        }
+
+        MediaType mediaType = MediaType.parseMediaType(fileType);
+        log.info("media type file type ================= {}", mediaType.getType());
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(partnerBadgeLogo.getImageData());
     }
 
 

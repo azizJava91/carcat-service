@@ -31,6 +31,8 @@ public class CarResponse {
     private String bodyType;
     private String message;
     private List<String> vinProvidedFields;
+    /** Partner ids for badge logo fetch ({@code GET /photo/for/partner/badge-logo/get/{partnerId}}). */
+    private List<String> servicedPartnerIds;
     private String resource;
     private BigDecimal allTimeCost;
     private Long engineTypeId;

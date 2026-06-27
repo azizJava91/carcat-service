@@ -67,11 +67,20 @@ public class Car {
     @Column(name = "vin_provided_fields")
     private List<String> vinProvidedFields;
 
+    /** Partner ids ({@code partners.id}) where this car received service — used for badge logos on car list. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "serviced_partner_ids")
+    @Builder.Default
+    private List<String> servicedPartnerIds = new ArrayList<>();
+
     @PrePersist
     @PreUpdate
     void ensureVinProvidedFields() {
         if (vinProvidedFields == null) {
             vinProvidedFields = Collections.emptyList();
+        }
+        if (servicedPartnerIds == null) {
+            servicedPartnerIds = new ArrayList<>();
         }
     }
 

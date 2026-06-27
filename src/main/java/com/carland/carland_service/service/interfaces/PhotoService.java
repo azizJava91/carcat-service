@@ -27,4 +27,8 @@ public interface PhotoService {
     PhotoResponse uploadPartnerPhoto(MultipartFile file, Long partnerId);
 
     ResponseEntity<byte[]> getPartnerPhotoById(Long partnerId);
+
+    PhotoResponse uploadPartnerBadgeLogo(MultipartFile file, Long partnerId);
+
+    ResponseEntity<byte[]> getPartnerBadgeLogoById(Long partnerId);
 }

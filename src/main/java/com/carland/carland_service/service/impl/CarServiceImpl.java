@@ -1505,6 +1505,9 @@ public class CarServiceImpl implements CarService {
                 .bodyType(car.getBodyType())
                 .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
                 .vinProvidedFields(car.getVinProvidedFields())
+                .servicedPartnerIds(car.getServicedPartnerIds() != null
+                        ? car.getServicedPartnerIds()
+                        : Collections.emptyList())
                 .allTimeCost(car.getAllTimeCost())
                 .resource(resource)
                 .build();

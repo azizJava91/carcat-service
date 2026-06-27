@@ -55,13 +55,22 @@ public class PhotoController {
     public PhotoResponse uploadPartnerPhoto(@RequestPart("file") MultipartFile file,
                                             @RequestParam("partnerId") Long partnerId) {
         return photoService.uploadPartnerPhoto(file, partnerId);
-//        return null;
     }
 
     @GetMapping(value = "/for/partner/get/{partnerId}", produces = MediaType.ALL_VALUE)
     public ResponseEntity<byte[]> getPartnerPhotoById(@PathVariable("partnerId") Long partnerId) {
         return photoService.getPartnerPhotoById(partnerId);
-//        return null;
+    }
+
+    @PostMapping(value = "/for/partner/badge-logo/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public PhotoResponse uploadPartnerBadgeLogo(@RequestPart("file") MultipartFile file,
+                                                  @RequestParam("partnerId") Long partnerId) {
+        return photoService.uploadPartnerBadgeLogo(file, partnerId);
+    }
+
+    @GetMapping(value = "/for/partner/badge-logo/get/{partnerId}", produces = MediaType.ALL_VALUE)
+    public ResponseEntity<byte[]> getPartnerBadgeLogoById(@PathVariable("partnerId") Long partnerId) {
+        return photoService.getPartnerBadgeLogoById(partnerId);
     }
 
 
