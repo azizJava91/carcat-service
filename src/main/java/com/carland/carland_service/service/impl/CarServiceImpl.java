@@ -1054,6 +1054,15 @@ public class CarServiceImpl implements CarService {
             return response;
         }
 
+        String plateNumber = carRequest.getPlateNumber().trim();
+        if (carRepository.findByPlateNumberIgnoreCase(plateNumber).isPresent()) {
+            log.warn("[addCar] FAIL AlreadyExistsException | reason=plateNumber already exists | plateNumber={}",
+                    plateNumber);
+            throw new AlreadyExistsException(
+                    EnumMessagesLangValues.PLATE_NUMBER_ALREADY_EXISTS.getMessageByLang(acceptLanguage));
+        }
+        log.info("[addCar] PASS plateNumber uniqueness check | plateNumber={}", plateNumber);
+
         log.info("[addCar] BRANCH new car flow | engineTypeId={}", carRequest.getEngineTypeId());
         log.info("[addCar] engineTypeRepository.findByEngineTypeId | engineTypeId={}", carRequest.getEngineTypeId());
         EngineType engineType = engineTypeRepository.findByEngineTypeId(carRequest.getEngineTypeId());
@@ -1075,7 +1084,7 @@ public class CarServiceImpl implements CarService {
                 carRequest.getVin(), carRequest.getPlateNumber(), carRequest.getBrand(), carRequest.getModel());
         Car newCar = Car.builder()
                 .vin(carRequest.getVin())
-                .plateNumber(carRequest.getPlateNumber())
+                .plateNumber(plateNumber)
                 .brand(carRequest.getBrand())
                 .model(carRequest.getModel())
                 .modelYear(carRequest.getModelYear())

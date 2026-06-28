@@ -154,6 +154,12 @@ public enum EnumMessagesLangValues {
             "Автомобиль с таким VIN-кодом уже существует"
     ),
 
+    PLATE_NUMBER_ALREADY_EXISTS(
+            "Bu qeydiyyat nişanı artıq mövcuddur",
+            "This license plate number already exists",
+            "Этот регистрационный номер уже существует"
+    ),
+
     APPOINTMENT_STATUS_ALREADY_SET(
             "Görüş statusu təyin edilib",
             "Appointment status already set",
