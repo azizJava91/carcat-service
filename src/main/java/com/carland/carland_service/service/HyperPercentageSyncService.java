@@ -27,6 +27,8 @@ import java.util.Optional;
  *       overwritten and become {@link PercentageStatus#EDITED_BY_PARTNER} (locked).
  *       An already partner-locked row is only updated by a strictly newer Hyper record.</li>
  *   <li>Idempotent: re-applying the same Hyper record is a no-op.</li>
+ *   <li>Next service: {@code lastService + intervalKm/intervalMonth} from the percentage
+ *       template — Hyper line next-service fields are not used.</li>
  *   <li>Unmatched / never-serviced records are skipped silently (no error).</li>
  * </ul>
  */
@@ -70,7 +72,7 @@ public class HyperPercentageSyncService {
                 }
             }
 
-            applyPartnerData(percentage, match, matchedRecordId);
+            applyPartnerData(car, percentage, match, matchedRecordId);
             percentageRepository.save(percentage);
             log.info("Synced percentage from Hyper | carId={}, serviceName={}, percentageId={}, recordId={}",
                     car.getCarId(), percentage.getServiceName(), percentage.getId(), matchedRecordId);
@@ -100,11 +102,7 @@ public class HyperPercentageSyncService {
 
     private boolean hasUsableData(HyperServiceMatch match) {
         Visit visit = match.visit();
-        ServiceHistoryV2 line = match.line();
-        return visit.getLastServiceDate() != null
-                || visit.getLastServiceMileage() != null
-                || line.getNextServiceDate() != null
-                || line.getNextServiceMileage() != null;
+        return visit.getLastServiceDate() != null || visit.getLastServiceMileage() != null;
     }
 
     private boolean isNewerVisit(Visit candidate, Visit currentBest) {
@@ -158,26 +156,69 @@ public class HyperPercentageSyncService {
         return appliedKm == null || visitKm > appliedKm;
     }
 
-    private void applyPartnerData(Percentage percentage, HyperServiceMatch match, String matchedRecordId) {
+    private void applyPartnerData(Car car, Percentage percentage, HyperServiceMatch match, String matchedRecordId) {
         Visit visit = match.visit();
-        ServiceHistoryV2 line = match.line();
 
-        if (visit.getLastServiceDate() != null) {
-            percentage.setLastServiceDate(visit.getLastServiceDate());
+        LocalDate lastServiceDate = visit.getLastServiceDate();
+        Integer lastServiceKm = visit.getLastServiceMileage();
+
+        if (lastServiceDate != null) {
+            percentage.setLastServiceDate(lastServiceDate);
         }
-        if (visit.getLastServiceMileage() != null) {
-            percentage.setLastServiceKm(visit.getLastServiceMileage());
+        if (lastServiceKm != null) {
+            percentage.setLastServiceKm(lastServiceKm);
         }
-        if (line.getNextServiceDate() != null) {
-            percentage.setNextServiceDate(line.getNextServiceDate());
+
+        Long intervalKm = percentage.getIntervalKm();
+        Integer intervalMonth = percentage.getIntervalMonth();
+
+        LocalDate nextServiceDate = null;
+        Integer nextServiceKm = null;
+
+        if (lastServiceKm != null && intervalKm != null && intervalKm > 0) {
+            nextServiceKm = Math.toIntExact(lastServiceKm + intervalKm);
+            percentage.setNextServiceKm(nextServiceKm);
         }
-        if (line.getNextServiceMileage() != null) {
-            percentage.setNextServiceKm(line.getNextServiceMileage());
+        if (lastServiceDate != null && intervalMonth != null && intervalMonth > 0) {
+            nextServiceDate = lastServiceDate.plusMonths(intervalMonth);
+            percentage.setNextServiceDate(nextServiceDate);
+        }
+
+        Long carMileage = car.getMileage();
+        if (lastServiceKm != null && nextServiceKm != null && carMileage != null) {
+            long totalKm = nextServiceKm - lastServiceKm;
+            long remainingKmRaw = nextServiceKm - carMileage;
+            percentage.setRemainingKm((int) Math.max(remainingKmRaw, 0));
+            if (totalKm > 0) {
+                int kmPct = (int) Math.round((remainingKmRaw * 100.0) / totalKm);
+                percentage.setKmPercentage(Math.max(0, Math.min(100, kmPct)));
+            } else {
+                percentage.setKmPercentage(0);
+            }
+        }
+
+        if (lastServiceDate != null && nextServiceDate != null) {
+            long lastDay = lastServiceDate.toEpochDay();
+            long nextDay = nextServiceDate.toEpochDay();
+            long nowDay = LocalDate.now().toEpochDay();
+            long totalDays = nextDay - lastDay;
+            long remainingDays = Math.max(nextDay - nowDay, 0);
+            if (totalDays > 0) {
+                int monthPct = (int) Math.round((remainingDays * 100.0) / totalDays);
+                percentage.setMonthPercentage(Math.max(0, Math.min(100, monthPct)));
+            } else {
+                percentage.setMonthPercentage(0);
+            }
+            percentage.setRemainingMonths(nextServiceDate);
         }
 
         percentage.setStatus(PercentageStatus.EDITED_BY_PARTNER.name());
         percentage.setPartnerRecordId(matchedRecordId);
         percentage.setLastPartnerSyncAt(LocalDateTime.now());
+
+        log.info("Applied Hyper partner data | carId={}, serviceName={}, lastKm={}, lastDate={}, nextKm={}, nextDate={}, intervalKm={}, intervalMonth={}",
+                car.getCarId(), percentage.getServiceName(), lastServiceKm, lastServiceDate,
+                nextServiceKm, nextServiceDate, intervalKm, intervalMonth);
     }
 
     private String recordIdOf(Visit visit) {
