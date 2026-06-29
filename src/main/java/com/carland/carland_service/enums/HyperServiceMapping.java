@@ -24,7 +24,7 @@ public enum HyperServiceMapping {
     BRAKE_PADS("Brake Pads"),
     CABIN_FILTER("Cabin Filter"),
     COOLANT("Coolant"),
-    ENGINE_OIL("Engine Oil"),
+    ENGINE_OIL("Engine Oil", "Engine oil & filter"),
     FUEL_FILTER("Fuel Filter"),
     GLOW_PLUGS("Glow Plugs"),
     HV_BATTERY_COOLANT("Hv Battery Coolant"),
