@@ -1,0 +1,36 @@
+---
+description: Git commit/push from Cursor when user requests deploy — triggers GitHub Actions CI/CD
+alwaysApply: true
+---
+
+# Git push & deploy (Cursor)
+
+User deploys via **GitHub Actions** on push to `origin`. Prefer doing git from Cursor terminal — do not ask user to open IntelliJ.
+
+## When to run git
+
+- **Push:** ONLY when the user explicitly says so (e.g. "push et", "deploy et", "GitHub'a gönder"). Never push because a plan/todo says so — always ask first: "Push edim?" unless the user already said push in that message.
+- **Commit:** ONLY when the user explicitly asks to commit. Do not commit proactively after implementing a feature.
+- Never commit/push proactively after code changes alone.
+
+## Tests
+
+- Do **not** add unit/integration tests unless the user explicitly asks for tests.
+
+## Standard push flow
+
+1. `git status` + `git diff` — review what will ship
+2. Stage only relevant files (never `.env`, secrets, credentials)
+3. Commit with a short message focused on **why**
+4. `git push origin HEAD` (branch is usually `main`)
+5. Report commit hash and confirm push succeeded
+
+## Remote
+
+- `origin`: https://github.com/azizJava91/carcat-service.git
+- Default branch: `main`
+
+## If push fails
+
+- Auth: user may need GitHub PAT (HTTPS) or SSH key configured once on this machine
+- Never `git push --force` to `main` unless user explicitly requests it

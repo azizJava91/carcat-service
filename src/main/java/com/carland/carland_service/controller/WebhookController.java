@@ -32,7 +32,7 @@ public class WebhookController {
         return "test basarili oldu";
     }
 
-    @GetMapping("/ca/find")
+    @GetMapping("/car/find")
     public boolean findCarByVin(@RequestParam String vin) {
         if (vin == null || vin.isBlank()) {
             return false;
