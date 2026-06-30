@@ -619,9 +619,9 @@ public class CarServiceImpl implements CarService {
             );
 
         }
-        System.err.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-        responseList.forEach(System.out::println);
-        System.err.println("########################################################################################################################################");
+        responseList.sort(Comparator
+                .comparingInt(this::remainingServiceScore)
+                .thenComparing(CarServicePercentageResponse::getServiceName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
         return PercentageResponseMain.builder()
                 .carId(car.getCarId())
                 .vin(car.getVin())
@@ -1564,6 +1564,28 @@ public class CarServiceImpl implements CarService {
 
     private boolean hasValue(String value) {
         return value != null && !value.isBlank();
+    }
+
+    /**
+     * Lower score = less remaining service life (km or time) = sort higher on the list.
+     * Uses the minimum of km and month remaining percentages when both are present.
+     */
+    private int remainingServiceScore(CarServicePercentageResponse item) {
+        Integer kmRemaining = item.getKmPercentage();
+        Integer monthRemaining = item.getMonthPercentageDigit() != null
+                ? item.getMonthPercentageDigit()
+                : item.getMonthPercentage();
+
+        if (kmRemaining == null && monthRemaining == null) {
+            return Integer.MAX_VALUE;
+        }
+        if (kmRemaining == null) {
+            return monthRemaining;
+        }
+        if (monthRemaining == null) {
+            return kmRemaining;
+        }
+        return Math.min(kmRemaining, monthRemaining);
     }
 
     private boolean canSendNotification(Percentage percentage) {
