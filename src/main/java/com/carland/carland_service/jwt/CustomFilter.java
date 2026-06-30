@@ -24,6 +24,7 @@ public class CustomFilter extends OncePerRequestFilter {
                 path.startsWith("/legal/")
                         || path.startsWith("/auth/")
                         || path.startsWith("/test/get")
+                        || path.startsWith("/webhook/")
                         || path.startsWith("/api/v1/user/customer-cars");
 
         if (isPublic) {
