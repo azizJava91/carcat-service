@@ -21,8 +21,8 @@ import java.util.Optional;
  *
  * <p>Rules:</p>
  * <ul>
- *   <li>Match: Hyper {@code universalServiceId} (String) is translated to our serviceName
- *       via {@link HyperServiceMapping}; the percentage is found by serviceName.</li>
+ *   <li>Match: Hyper {@code universalServiceId} (String) is translated to our {@code name_en}
+ *       via {@link HyperServiceMapping}; the percentage is found by {@code serviceNameEn}.</li>
  *   <li>Precedence: partner data is authoritative. CREATED and EDITED_BY_CUSTOMER are
  *       overwritten and become {@link PercentageStatus#EDITED_BY_PARTNER} (locked).
  *       An already partner-locked row is only updated by a strictly newer Hyper record.</li>
@@ -46,11 +46,11 @@ public class HyperPercentageSyncService {
 
         List<Percentage> percentages = percentageRepository.findAllByCarId(car.getCarId());
         for (Percentage percentage : percentages) {
-            if (percentage.getServiceName() == null || percentage.getServiceName().isBlank()) {
+            if (percentage.getServiceNameEn() == null || percentage.getServiceNameEn().isBlank()) {
                 continue;
             }
 
-            Optional<HyperServiceMatch> matchOpt = findLatestMatch(percentage.getServiceName(), visits);
+            Optional<HyperServiceMatch> matchOpt = findLatestMatch(percentage.getServiceNameEn(), visits);
             if (matchOpt.isEmpty()) {
                 continue;
             }
@@ -74,12 +74,12 @@ public class HyperPercentageSyncService {
 
             applyPartnerData(car, percentage, match, matchedRecordId);
             percentageRepository.save(percentage);
-            log.info("Synced percentage from Hyper | carId={}, serviceName={}, percentageId={}, recordId={}",
-                    car.getCarId(), percentage.getServiceName(), percentage.getId(), matchedRecordId);
+            log.info("Synced percentage from Hyper | carId={}, nameEn={}, percentageId={}, recordId={}",
+                    car.getCarId(), percentage.getServiceNameEn(), percentage.getId(), matchedRecordId);
         }
     }
 
-    private Optional<HyperServiceMatch> findLatestMatch(String serviceName, List<Visit> visits) {
+    private Optional<HyperServiceMatch> findLatestMatch(String nameEn, List<Visit> visits) {
         HyperServiceMatch best = null;
 
         for (Visit visit : visits) {
@@ -87,8 +87,7 @@ public class HyperPercentageSyncService {
                 continue;
             }
             for (ServiceHistoryV2 line : visit.getServices()) {
-                Optional<String> mappedName = HyperServiceMapping.toServiceName(line.getUniversalServiceId());
-                if (mappedName.isEmpty() || !mappedName.get().equalsIgnoreCase(serviceName)) {
+                if (!HyperServiceMapping.matches(line.getUniversalServiceId(), nameEn)) {
                     continue;
                 }
                 if (best == null || isNewerVisit(visit, best.visit())) {
@@ -217,7 +216,7 @@ public class HyperPercentageSyncService {
         percentage.setLastPartnerSyncAt(LocalDateTime.now());
 
         log.info("Applied Hyper partner data | carId={}, serviceName={}, lastKm={}, lastDate={}, nextKm={}, nextDate={}, intervalKm={}, intervalMonth={}",
-                car.getCarId(), percentage.getServiceName(), lastServiceKm, lastServiceDate,
+                car.getCarId(), percentage.getServiceNameEn(), lastServiceKm, lastServiceDate,
                 nextServiceKm, nextServiceDate, intervalKm, intervalMonth);
     }
 

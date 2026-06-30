@@ -3,78 +3,111 @@ package com.carland.carland_service.enums;
 import java.util.Optional;
 
 /**
- * Maps Hyper's raw {@code universalServiceId} (kept as String, exactly as Hyper sends it)
- * to our canonical {@code ServiceEntity.serviceName}.
+ * Maps Hyper's raw {@code universalServiceId} to {@code services.name_en}.
  *
- * <p>We never convert Hyper's id type in their payload; we only translate it
- * internally so the sync can locate the matching {@code Percentage} of a car by
- * its serviceName.</p>
+ * <p>Sync matches {@code Percentage.serviceNameEn} via {@link #matches(String, String)}.</p>
  *
- * <p>Hyper currently sends the canonical service name itself as the universalServiceId,
- * so each entry matches against its own serviceName. If Hyper later starts sending
- * additional id forms (e.g. numeric codes), pass them as extra args and matching will
- * cover them too. Any value not listed here (e.g. "other") resolves to empty and is
- * skipped silently by the caller.</p>
+ * <p>Primary value = exact DB {@code name_en}. {@code extraHyperIds} = alternate Hyper id spellings
+ * for the same service row. Unmapped values (e.g. {@code "other"}) are skipped silently.</p>
  */
 public enum HyperServiceMapping {
 
-    AIR_FILTER("Air Filter"),
+    AIR_FILTER("Air filter"),
     BATTERY("Battery"),
-    BRAKE_FLUID("Brake Fluid"),
-    BRAKE_PADS("Brake Pads"),
-    CABIN_FILTER("Cabin Filter"),
-    COOLANT("Coolant"),
-    ENGINE_OIL("Engine Oil", "Engine oil & filter"),
-    FUEL_FILTER("Fuel Filter"),
-    GLOW_PLUGS("Glow Plugs"),
-    HV_BATTERY_COOLANT("Hv Battery Coolant"),
-    INVERTER_COOLANT("Inverter Coolant"),
-    LPG_GAS_FILTER("Lpg Gas Filter"),
-    LPG_INJECTORS("Lpg Injectors"),
-    LPG_REDUCER("Lpg Reducer"),
-    POWER_STEERING_FLUID("Power Steering Fluid"),
-    REDUCTION_GEAR_OIL("Reduction Gear Oil"),
-    SPARK_PLUGS("Spark Plugs"),
-    TIMING_BELT("Timing Belt"),
-    TIRES("Tires"),
-    TRANSMISSION_FLUID("Transmission Fluid"),
-    WHEEL_ALIGNMENT("Wheel Alignment"),
-    WHEEL_BALANCING("Wheel Balancing");
+    BRAKE_FLUID("Brake fluid"),
+    BRAKE_PADS("Brake pads"),
+    CABIN_FILTER("Cabin filter"),
+    COOLANT("Coolant (antifreeze)"),
+    ENGINE_OIL("Engine oil & filter"),
+    FUEL_FILTER("Fuel filter"),
+    GAS_FILTER("Gas filter"),
+    GAS_INJECTORS("Gas injectors"),
+    GLOW_PLUGS("Glow plugs"),
+    HV_BATTERY_COOLANT("HV battery / power-electronics coolant"),
+    INVERTER_COOLANT("Inverter Coolant (antifreeze)"),
+    POWER_STEERING_FLUID("Power steering fluid"),
+    REDUCTION_GEAR_OIL("Reduction-gear oil"),
+    SPARK_PLUGS("Spark plugs"),
+    TIMING_BELT("Timing belt"),
+    TRANSMISSION_FLUID("Transmission fluid"),
+    /** DB {@code name_en} is {@code Tyres}; Hyper may send {@code Tyres} or {@code Tires}. */
+    TYRES("Tyres", "Tires"),
+    VAPORISER_SERVICE("Vaporiser service"),
+    WHEEL_ALIGNMENT("Wheel alignment"),
+    WHEEL_BALANCING("Wheel balancing & rotation"),
+    WHEEL_BALANCING_COMPACT("Wheel balancing&rotation", "Wheel balancing & rotation");
 
-    /** Our canonical service name (matches ServiceEntity.serviceName). */
-    private final String serviceName;
+    /** Canonical {@code services.name_en} (exact DB value). */
+    private final String nameEn;
 
-    /** Extra Hyper universalServiceId form(s); the serviceName itself is always matched. */
+    /** Alternate Hyper {@code universalServiceId} spellings for this {@code name_en}. */
     private final String[] extraHyperIds;
 
-    HyperServiceMapping(String serviceName, String... extraHyperIds) {
-        this.serviceName = serviceName;
+    HyperServiceMapping(String nameEn, String... extraHyperIds) {
+        this.nameEn = nameEn;
         this.extraHyperIds = extraHyperIds;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getNameEn() {
+        return nameEn;
     }
 
     /**
-     * Resolve a Hyper universalServiceId (raw String) to our canonical serviceName.
-     * Returns empty when there is no mapping (caller must skip silently).
+     * True when {@code hyperUniversalServiceId} maps to the given {@code percentageNameEn} row.
      */
-    public static Optional<String> toServiceName(String hyperUniversalServiceId) {
-        if (hyperUniversalServiceId == null || hyperUniversalServiceId.isBlank()) {
-            return Optional.empty();
+    public static boolean matches(String hyperUniversalServiceId, String percentageNameEn) {
+        if (hyperUniversalServiceId == null || hyperUniversalServiceId.isBlank()
+                || percentageNameEn == null || percentageNameEn.isBlank()) {
+            return false;
         }
-        String normalized = hyperUniversalServiceId.trim();
+        String hyperId = hyperUniversalServiceId.trim();
         for (HyperServiceMapping mapping : values()) {
-            if (mapping.serviceName.equalsIgnoreCase(normalized)) {
-                return Optional.of(mapping.serviceName);
+            if (!mapping.nameEn.equalsIgnoreCase(percentageNameEn)) {
+                continue;
+            }
+            if (mapping.nameEn.equalsIgnoreCase(hyperId)) {
+                return true;
             }
             for (String id : mapping.extraHyperIds) {
-                if (id.equalsIgnoreCase(normalized)) {
-                    return Optional.of(mapping.serviceName);
+                if (id.equalsIgnoreCase(hyperId)) {
+                    return true;
                 }
             }
         }
-        return Optional.empty();
+        return false;
+    }
+
+    /**
+     * Resolve a Hyper id to {@code name_en} when the mapping is unambiguous.
+     * Returns empty when unknown or when multiple rows could match the same Hyper id.
+     */
+    public static Optional<String> toNameEn(String hyperUniversalServiceId) {
+        if (hyperUniversalServiceId == null || hyperUniversalServiceId.isBlank()) {
+            return Optional.empty();
+        }
+        String hyperId = hyperUniversalServiceId.trim();
+        String matched = null;
+        for (HyperServiceMapping mapping : values()) {
+            if (!mapping.hyperIdMatches(hyperId)) {
+                continue;
+            }
+            if (matched != null && !matched.equalsIgnoreCase(mapping.nameEn)) {
+                return Optional.empty();
+            }
+            matched = mapping.nameEn;
+        }
+        return Optional.ofNullable(matched);
+    }
+
+    private boolean hyperIdMatches(String hyperId) {
+        if (nameEn.equalsIgnoreCase(hyperId)) {
+            return true;
+        }
+        for (String id : extraHyperIds) {
+            if (id.equalsIgnoreCase(hyperId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
