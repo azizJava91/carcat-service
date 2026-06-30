@@ -40,6 +40,9 @@ spring:
 server:
   port: 9091
 
+carland:
+  internal-token: ${CARLAND_INTERNAL_TOKEN:}
+
 super:
   admin:
     phone: ${SUPER_ADMIN_PHONE}
