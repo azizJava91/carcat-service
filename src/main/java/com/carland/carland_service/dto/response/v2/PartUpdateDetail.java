@@ -11,10 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ServiceHistoryPartV2Response {
-    /** Carland DB id — optional, used by partner update requests. */
-    private Long id;
+public class PartUpdateDetail {
     private String name;
     private BigDecimal qty;
     private String unit;
+    private Long partId;
+    private boolean updated;
 }
