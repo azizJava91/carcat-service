@@ -1,0 +1,260 @@
+package com.carland.carland_service.service.impl;
+
+import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
+import com.carland.carland_service.dto.response.v2.MoneyResponse;
+import com.carland.carland_service.dto.response.v2.PartnerNewServiceVisitResult;
+import com.carland.carland_service.dto.response.v2.ServiceHistoryLineV2Response;
+import com.carland.carland_service.dto.response.v2.ServiceHistoryPartV2;
+import com.carland.carland_service.dto.response.v2.ServiceHistoryPartV2Response;
+import com.carland.carland_service.dto.response.v2.ServiceHistoryVisitV2Response;
+import com.carland.carland_service.dto.response.v2.ServiceHistoryV2;
+import com.carland.carland_service.dto.response.v2.Visit;
+import com.carland.carland_service.entity.Car;
+import com.carland.carland_service.entity.Partner;
+import com.carland.carland_service.enums.EnumPartnerId;
+import com.carland.carland_service.exceptions.MissingFieldException;
+import com.carland.carland_service.exceptions.ResourceNotFoundException;
+import com.carland.carland_service.repository.CarRepository;
+import com.carland.carland_service.repository.VisitRepository;
+import com.carland.carland_service.service.HyperPercentageSyncService;
+import com.carland.carland_service.service.PartnerLookupService;
+import com.carland.carland_service.service.PartnerServiceVisitIngestService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisitIngestService {
+
+    private static final EnumPartnerId DEFAULT_PARTNER = EnumPartnerId.HYPER;
+
+    private final CarRepository carRepository;
+    private final VisitRepository visitRepository;
+    private final PartnerLookupService partnerLookupService;
+    private final HyperPercentageSyncService hyperPercentageSyncService;
+
+    @Override
+    @Transactional
+    public PartnerNewServiceVisitResult ingest(CarVinServiceHistoryV2Response request) {
+        if (request == null || request.getVin() == null || request.getVin().isBlank()) {
+            throw new MissingFieldException("vin is required");
+        }
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new MissingFieldException("items is required");
+        }
+
+        String vin = request.getVin().trim();
+        Car car = carRepository.findByVin(vin);
+        if (car == null) {
+            throw new ResourceNotFoundException("Car not found for vin: " + vin);
+        }
+
+        PartnerNewServiceVisitResult result = PartnerNewServiceVisitResult.builder()
+                .vin(vin)
+                .build();
+
+        List<Visit> touchedVisits = new ArrayList<>();
+
+        for (ServiceHistoryVisitV2Response item : request.getItems()) {
+            if (item.getPartnerRecordId() == null) {
+                log.warn("Skipping visit without partnerRecordId for vin={}", vin);
+                continue;
+            }
+
+            Optional<Visit> existing = visitRepository.findWithDetailsByCarAndHyperRecordId(car, item.getPartnerRecordId());
+            if (existing.isPresent()) {
+                Visit visit = existing.get();
+                appendMissingLinesAndParts(visit, item, result);
+                touchedVisits.add(visit);
+                result.setVisitsSkipped(result.getVisitsSkipped() + 1);
+                continue;
+            }
+
+            Visit created = mapItemToVisit(car, item);
+            visitRepository.save(created);
+            touchedVisits.add(created);
+            result.setVisitsCreated(result.getVisitsCreated() + 1);
+            result.setLinesCreated(result.getLinesCreated() + sizeOf(item.getServices()));
+            result.setPartsCreated(result.getPartsCreated() + sizeOf(item.getParts()));
+        }
+
+        if (!touchedVisits.isEmpty()) {
+            recalculateAllTimeCost(car);
+            refreshServicedPartnerIds(car);
+            hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
+        }
+
+        return result;
+    }
+
+    private void appendMissingLinesAndParts(Visit visit, ServiceHistoryVisitV2Response item, PartnerNewServiceVisitResult result) {
+        if (item.getServices() != null) {
+            for (ServiceHistoryLineV2Response line : item.getServices()) {
+                if (lineExists(visit, line)) {
+                    result.setLinesSkipped(result.getLinesSkipped() + 1);
+                    continue;
+                }
+                visit.addService(mapLineToEntity(line));
+                result.setLinesCreated(result.getLinesCreated() + 1);
+            }
+        }
+        if (item.getParts() != null) {
+            for (ServiceHistoryPartV2Response part : item.getParts()) {
+                if (partExists(visit, part)) {
+                    result.setPartsSkipped(result.getPartsSkipped() + 1);
+                    continue;
+                }
+                visit.addPart(mapPartToEntity(part));
+                result.setPartsCreated(result.getPartsCreated() + 1);
+            }
+        }
+        visitRepository.save(visit);
+    }
+
+    private Visit mapItemToVisit(Car car, ServiceHistoryVisitV2Response item) {
+        Long partnerId = item.getServiceCenterId() != null ? item.getServiceCenterId() : DEFAULT_PARTNER.getId();
+        String partnerName = resolvePartnerName(item, partnerId);
+
+        MoneyResponse amount = item.getAmount();
+        Visit visit = Visit.builder()
+                .car(car)
+                .hyperRecordId(item.getPartnerRecordId())
+                .serviceType(item.getType())
+                .lastServiceDate(item.getDate())
+                .lastServiceMileage(item.getMileage())
+                .dealer(item.getDealer())
+                .serviceCenterId(partnerId)
+                .serviceCenterName(partnerName)
+                .finalCostAmount(amount != null ? amount.getAmount() : null)
+                .finalCostCurrency(amount != null ? amount.getCurrency() : null)
+                .serviceGroups(item.getServiceGroups() != null ? new ArrayList<>(item.getServiceGroups()) : new ArrayList<>())
+                .build();
+
+        if (item.getServices() != null) {
+            for (ServiceHistoryLineV2Response line : item.getServices()) {
+                visit.addService(mapLineToEntity(line));
+            }
+        }
+        if (item.getParts() != null) {
+            for (ServiceHistoryPartV2Response part : item.getParts()) {
+                visit.addPart(mapPartToEntity(part));
+            }
+        }
+        return visit;
+    }
+
+    private ServiceHistoryV2 mapLineToEntity(ServiceHistoryLineV2Response line) {
+        MoneyResponse cost = line.getCost();
+        return ServiceHistoryV2.builder()
+                .serviceCode(line.getServiceCode())
+                .serviceName(line.getServiceName())
+                .universalServiceId(normalizeUniversalServiceId(line.getUniversalServiceId()))
+                .costAmount(cost != null ? cost.getAmount() : null)
+                .costCurrency(cost != null ? cost.getCurrency() : null)
+                .nextServiceDate(line.getNextServiceDate())
+                .nextServiceMileage(line.getNextServiceMileage())
+                .build();
+    }
+
+    private ServiceHistoryPartV2 mapPartToEntity(ServiceHistoryPartV2Response part) {
+        return ServiceHistoryPartV2.builder()
+                .name(part.getName())
+                .qty(part.getQty())
+                .unit(part.getUnit())
+                .build();
+    }
+
+    private boolean lineExists(Visit visit, ServiceHistoryLineV2Response line) {
+        String key = lineKey(line);
+        return visit.getServices().stream().anyMatch(existing -> lineKey(existing).equals(key));
+    }
+
+    private boolean partExists(Visit visit, ServiceHistoryPartV2Response part) {
+        String key = partKey(part);
+        return visit.getParts().stream().anyMatch(existing -> partKey(existing).equals(key));
+    }
+
+    private String lineKey(ServiceHistoryLineV2Response line) {
+        return Objects.toString(line.getServiceCode(), "")
+                + "|" + normalizeUniversalServiceId(line.getUniversalServiceId())
+                + "|" + Objects.toString(line.getServiceName(), "");
+    }
+
+    private String lineKey(ServiceHistoryV2 line) {
+        return Objects.toString(line.getServiceCode(), "")
+                + "|" + Objects.toString(line.getUniversalServiceId(), "")
+                + "|" + Objects.toString(line.getServiceName(), "");
+    }
+
+    private String partKey(ServiceHistoryPartV2Response part) {
+        return Objects.toString(part.getName(), "")
+                + "|" + Objects.toString(part.getQty(), "")
+                + "|" + Objects.toString(part.getUnit(), "");
+    }
+
+    private String partKey(ServiceHistoryPartV2 part) {
+        return Objects.toString(part.getName(), "")
+                + "|" + Objects.toString(part.getQty(), "")
+                + "|" + Objects.toString(part.getUnit(), "");
+    }
+
+    private String resolvePartnerName(ServiceHistoryVisitV2Response item, Long partnerId) {
+        if (item.getServiceCenterName() != null && !item.getServiceCenterName().isBlank()) {
+            return item.getServiceCenterName();
+        }
+        return partnerLookupService.find(EnumPartnerId.fromId(partnerId).orElse(DEFAULT_PARTNER))
+                .map(Partner::getName)
+                .orElse(DEFAULT_PARTNER.getDefaultName());
+    }
+
+    private void recalculateAllTimeCost(Car car) {
+        BigDecimal total = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car).stream()
+                .map(this::resolveVisitFinalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        car.setAllTimeCost(total);
+        carRepository.save(car);
+    }
+
+    private BigDecimal resolveVisitFinalCost(Visit visit) {
+        if (visit.getFinalCostAmount() != null) {
+            return visit.getFinalCostAmount();
+        }
+        if (visit.getCostAmount() != null) {
+            return visit.getCostAmount();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private void refreshServicedPartnerIds(Car car) {
+        List<Visit> allVisits = visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car);
+        LinkedHashSet<String> orderedPartnerIds = new LinkedHashSet<>();
+        for (Visit visit : allVisits) {
+            if (visit.getServiceCenterId() != null) {
+                orderedPartnerIds.add(String.valueOf(visit.getServiceCenterId()));
+            }
+        }
+        car.setServicedPartnerIds(new ArrayList<>(orderedPartnerIds));
+        carRepository.save(car);
+    }
+
+    private String normalizeUniversalServiceId(String raw) {
+        if (raw == null || raw.isBlank() || "other".equalsIgnoreCase(raw.trim())) {
+            return "";
+        }
+        return raw.trim();
+    }
+
+    private int sizeOf(List<?> items) {
+        return items == null ? 0 : items.size();
+    }
+}

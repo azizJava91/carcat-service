@@ -1,6 +1,9 @@
 package com.carland.carland_service.controller;
 
+import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
+import com.carland.carland_service.dto.response.v2.PartnerNewServiceVisitResult;
 import com.carland.carland_service.repository.CarRepository;
+import com.carland.carland_service.service.PartnerServiceVisitIngestService;
 import com.carland.carland_service.util.InternalTokenValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +25,7 @@ public class WebhookController {
 
     private final InternalTokenValidator internalTokenValidator;
     private final CarRepository carRepository;
+    private final PartnerServiceVisitIngestService partnerServiceVisitIngestService;
 
     @ModelAttribute
     void requireInternalToken(HttpServletRequest request) {
@@ -39,5 +45,10 @@ public class WebhookController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/new-service-visit")
+    public PartnerNewServiceVisitResult newServiceVisit(@RequestBody CarVinServiceHistoryV2Response request) {
+        return partnerServiceVisitIngestService.ingest(request);
     }
 }
