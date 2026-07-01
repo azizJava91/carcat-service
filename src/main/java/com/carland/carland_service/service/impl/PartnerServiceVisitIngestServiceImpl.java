@@ -96,14 +96,24 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
             result.setPartsCreated(result.getPartsCreated() + sizeOf(item.getParts()));
         }
 
-        if (!touchedVisits.isEmpty()) {
+        if (result.getVisitsCreated() > 0 || result.getLinesCreated() > 0 || result.getPartsCreated() > 0) {
             recalculateAllTimeCost(car);
             refreshServicedPartnerIds(car);
-            hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
+            refreshPercentagesFromTouchedVisits(car, touchedVisits);
         }
 
         result.setMessage(resolveMessage(result));
         return result;
+    }
+
+    private void refreshPercentagesFromTouchedVisits(Car car, List<Visit> touchedVisits) {
+        for (Visit visit : touchedVisits) {
+            if (visit.getHyperRecordId() == null) {
+                continue;
+            }
+            visitRepository.findWithDetailsByCarIdAndHyperRecordId(car.getCarId(), visit.getHyperRecordId())
+                    .ifPresent(freshVisit -> hyperPercentageSyncService.syncFromVisit(car, freshVisit));
+        }
     }
 
     private VisitIngestDetail buildCreatedVisitDetail(Visit visit, Long partnerRecordId) {

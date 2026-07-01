@@ -40,6 +40,21 @@ public class HyperPercentageSyncService {
     private final PercentageRepository percentageRepository;
 
     public void syncFromVisits(Car car, List<Visit> visits) {
+        syncInternal(car, visits, false);
+    }
+
+    /**
+     * Re-applies partner visit data onto matching percentages after a successful webhook create/update.
+     * Unlike {@link #syncFromVisits}, re-syncs even when the same partner record was applied before.
+     */
+    public void syncFromVisit(Car car, Visit visit) {
+        if (visit == null) {
+            return;
+        }
+        syncInternal(car, List.of(visit), true);
+    }
+
+    private void syncInternal(Car car, List<Visit> visits, boolean forceReapply) {
         if (visits == null || visits.isEmpty()) {
             return;
         }
@@ -57,25 +72,24 @@ public class HyperPercentageSyncService {
             HyperServiceMatch match = matchOpt.get();
 
             if (!hasUsableData(match)) {
-                // never serviced / nothing to set -> skip silently
                 continue;
             }
 
             PercentageStatus current = PercentageStatus.fromStored(percentage.getStatus());
             String matchedRecordId = recordIdOf(match.visit());
 
-            if (current == PercentageStatus.EDITED_BY_PARTNER) {
+            if (!forceReapply && current == PercentageStatus.EDITED_BY_PARTNER) {
                 boolean sameRecord = matchedRecordId != null
                         && matchedRecordId.equals(percentage.getPartnerRecordId());
                 if (sameRecord || !isNewerThanApplied(match.visit(), percentage)) {
-                    continue; // already applied or not newer -> idempotent no-op
+                    continue;
                 }
             }
 
             applyPartnerData(car, percentage, match, matchedRecordId);
             percentageRepository.save(percentage);
-            log.info("Synced percentage from Hyper | carId={}, nameEn={}, percentageId={}, recordId={}",
-                    car.getCarId(), percentage.getServiceNameEn(), percentage.getId(), matchedRecordId);
+            log.info("Synced percentage from Hyper | carId={}, nameEn={}, percentageId={}, recordId={}, forced={}",
+                    car.getCarId(), percentage.getServiceNameEn(), percentage.getId(), matchedRecordId, forceReapply);
         }
     }
 

@@ -75,7 +75,7 @@ public class PartnerServiceVisitUpdateServiceImpl implements PartnerServiceVisit
         if (changed) {
             visitRepository.saveAndFlush(visit);
             recalculateAllTimeCost(car);
-            hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
+            hyperPercentageSyncService.syncFromVisit(car, visit);
             result.setMessage("Visit and service lines updated");
         } else {
             result.setMessage("Visit and service lines already up to date");
