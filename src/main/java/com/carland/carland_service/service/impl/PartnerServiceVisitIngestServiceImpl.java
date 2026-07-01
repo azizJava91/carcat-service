@@ -1,6 +1,7 @@
 package com.carland.carland_service.service.impl;
 
 import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
+import com.carland.carland_service.dto.response.v2.LineIngestDetail;
 import com.carland.carland_service.dto.response.v2.MoneyResponse;
 import com.carland.carland_service.dto.response.v2.PartnerNewServiceVisitResult;
 import com.carland.carland_service.dto.response.v2.ServiceHistoryLineV2Response;
@@ -9,6 +10,7 @@ import com.carland.carland_service.dto.response.v2.ServiceHistoryPartV2Response;
 import com.carland.carland_service.dto.response.v2.ServiceHistoryVisitV2Response;
 import com.carland.carland_service.dto.response.v2.ServiceHistoryV2;
 import com.carland.carland_service.dto.response.v2.Visit;
+import com.carland.carland_service.dto.response.v2.VisitIngestDetail;
 import com.carland.carland_service.entity.Car;
 import com.carland.carland_service.entity.Partner;
 import com.carland.carland_service.enums.EnumPartnerId;
@@ -30,6 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +64,7 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
 
         PartnerNewServiceVisitResult result = PartnerNewServiceVisitResult.builder()
                 .vin(vin)
+                .visits(new ArrayList<>())
                 .build();
 
         List<Visit> touchedVisits = new ArrayList<>();
@@ -74,15 +78,17 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
             Optional<Visit> existing = visitRepository.findWithDetailsByCarAndHyperRecordId(car, item.getPartnerRecordId());
             if (existing.isPresent()) {
                 Visit visit = existing.get();
-                appendMissingLinesAndParts(visit, item, result);
+                VisitIngestDetail detail = appendMissingLinesAndParts(visit, item, result);
                 touchedVisits.add(visit);
+                result.getVisits().add(detail);
                 result.setVisitsSkipped(result.getVisitsSkipped() + 1);
                 continue;
             }
 
             Visit created = mapItemToVisit(car, item);
-            visitRepository.save(created);
+            visitRepository.saveAndFlush(created);
             touchedVisits.add(created);
+            result.getVisits().add(buildCreatedVisitDetail(created, item.getPartnerRecordId()));
             result.setVisitsCreated(result.getVisitsCreated() + 1);
             result.setLinesCreated(result.getLinesCreated() + sizeOf(item.getServices()));
             result.setPartsCreated(result.getPartsCreated() + sizeOf(item.getParts()));
@@ -94,13 +100,38 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
             hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
         }
 
+        result.setMessage(resolveMessage(result));
         return result;
     }
 
-    private void appendMissingLinesAndParts(Visit visit, ServiceHistoryVisitV2Response item, PartnerNewServiceVisitResult result) {
+    private VisitIngestDetail buildCreatedVisitDetail(Visit visit, Long partnerRecordId) {
+        List<LineIngestDetail> lines = new ArrayList<>();
+        if (visit.getServices() != null) {
+            for (ServiceHistoryV2 line : visit.getServices()) {
+                lines.add(LineIngestDetail.builder()
+                        .serviceCode(line.getServiceCode())
+                        .lineId(line.getId())
+                        .created(true)
+                        .build());
+            }
+        }
+        return VisitIngestDetail.builder()
+                .partnerRecordId(partnerRecordId)
+                .visitId(visit.getId())
+                .visitCreated(true)
+                .lines(lines)
+                .build();
+    }
+
+    private VisitIngestDetail appendMissingLinesAndParts(Visit visit, ServiceHistoryVisitV2Response item, PartnerNewServiceVisitResult result) {
+        Set<String> existingLineKeys = new LinkedHashSet<>();
+        for (ServiceHistoryV2 line : visit.getServices()) {
+            existingLineKeys.add(lineKey(line));
+        }
+
         if (item.getServices() != null) {
             for (ServiceHistoryLineV2Response line : item.getServices()) {
-                if (lineExists(visit, line)) {
+                if (findMatchingLine(visit, line) != null) {
                     result.setLinesSkipped(result.getLinesSkipped() + 1);
                     continue;
                 }
@@ -118,7 +149,47 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
                 result.setPartsCreated(result.getPartsCreated() + 1);
             }
         }
-        visitRepository.save(visit);
+        visitRepository.saveAndFlush(visit);
+
+        List<LineIngestDetail> lineDetails = new ArrayList<>();
+        if (item.getServices() != null) {
+            for (ServiceHistoryLineV2Response line : item.getServices()) {
+                ServiceHistoryV2 matched = findMatchingLine(visit, line);
+                if (matched == null) {
+                    continue;
+                }
+                lineDetails.add(LineIngestDetail.builder()
+                        .serviceCode(matched.getServiceCode())
+                        .lineId(matched.getId())
+                        .created(!existingLineKeys.contains(lineKey(line)))
+                        .build());
+            }
+        }
+
+        return VisitIngestDetail.builder()
+                .partnerRecordId(item.getPartnerRecordId())
+                .visitId(visit.getId())
+                .visitCreated(false)
+                .lines(lineDetails)
+                .build();
+    }
+
+    private ServiceHistoryV2 findMatchingLine(Visit visit, ServiceHistoryLineV2Response line) {
+        String key = lineKey(line);
+        return visit.getServices().stream()
+                .filter(existing -> lineKey(existing).equals(key))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String resolveMessage(PartnerNewServiceVisitResult result) {
+        if (result.getVisitsCreated() > 0 || result.getLinesCreated() > 0 || result.getPartsCreated() > 0) {
+            if (result.getVisitsSkipped() > 0 || result.getLinesSkipped() > 0 || result.getPartsSkipped() > 0) {
+                return "Visit updated with new service lines or parts";
+            }
+            return "Visit and service lines created";
+        }
+        return "Visit and service lines already exist";
     }
 
     private Visit mapItemToVisit(Car car, ServiceHistoryVisitV2Response item) {
@@ -172,11 +243,6 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
                 .qty(part.getQty())
                 .unit(part.getUnit())
                 .build();
-    }
-
-    private boolean lineExists(Visit visit, ServiceHistoryLineV2Response line) {
-        String key = lineKey(line);
-        return visit.getServices().stream().anyMatch(existing -> lineKey(existing).equals(key));
     }
 
     private boolean partExists(Visit visit, ServiceHistoryPartV2Response part) {

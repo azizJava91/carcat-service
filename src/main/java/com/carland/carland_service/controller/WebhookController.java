@@ -48,8 +48,17 @@ public class WebhookController {
     }
 
     @PostMapping("/new-service-visit")
-    public PartnerNewServiceVisitResult newServiceVisit(@RequestBody CarVinServiceHistoryV2Response request) {
-        System.err.println("bura islediiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-        return partnerServiceVisitIngestService.ingest(request);
+    public ResponseEntity<PartnerNewServiceVisitResult> newServiceVisit(@RequestBody CarVinServiceHistoryV2Response request) {
+        PartnerNewServiceVisitResult result = partnerServiceVisitIngestService.ingest(request);
+        return ResponseEntity.status(resolveIngestStatus(result)).body(result);
+    }
+
+    private HttpStatus resolveIngestStatus(PartnerNewServiceVisitResult result) {
+        if (result.getVisitsCreated() > 0 || result.getLinesCreated() > 0 || result.getPartsCreated() > 0) {
+            System.err.println("elave olundu");
+            return HttpStatus.OK;
+        }
+        System.err.println("elave olunub , conflict");
+        return HttpStatus.CONFLICT;
     }
 }

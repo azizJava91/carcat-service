@@ -8,9 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 
@@ -35,11 +33,8 @@ public class WebhookSignatureFilter extends OncePerRequestFilter {
             return;
         }
 
-        HttpServletRequest wrapped = request instanceof ContentCachingRequestWrapper
-                ? request
-                : new ContentCachingRequestWrapper(request);
-
-        byte[] body = StreamUtils.copyToByteArray(wrapped.getInputStream());
+        CachedBodyHttpServletRequest wrapped = new CachedBodyHttpServletRequest(request);
+        byte[] body = wrapped.getCachedBody();
 
         if (!hmacSignatureValidator.isValid(wrapped, body)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
