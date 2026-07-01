@@ -42,6 +42,8 @@ server:
 
 carland:
   internal-token: ${CARLAND_INTERNAL_TOKEN:}
+  webhook:
+    signature-secret: ${WEBHOOK_SECRET:}
 
 super:
   admin:

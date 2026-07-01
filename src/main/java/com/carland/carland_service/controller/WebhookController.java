@@ -5,6 +5,7 @@ import com.carland.carland_service.util.InternalTokenValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,10 +34,10 @@ public class WebhookController {
     }
 
     @GetMapping("/car/find")
-    public boolean findCarByVin(@RequestParam String vin) {
-        if (vin == null || vin.isBlank()) {
-            return false;
+    public ResponseEntity<Void> findCarByVin(@RequestParam String vin) {
+        if (vin == null || vin.isBlank() || carRepository.findByVin(vin.trim()) == null) {
+            return ResponseEntity.notFound().build();
         }
-        return carRepository.findByVin(vin.trim()) != null;
+        return ResponseEntity.ok().build();
     }
 }
