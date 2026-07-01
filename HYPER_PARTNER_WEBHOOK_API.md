@@ -1,0 +1,537 @@
+# Carland × Hyper Partner Webhook API
+
+**Version:** 1.0  
+**Base URL:** `https://digital-innovation.agency`  
+**Audience:** Hyper integration team  
+**Last updated:** 2026-06-30
+
+---
+
+## 1. Overview
+
+Hyper sends service-visit data to Carland through three partner endpoints. All traffic goes through the public webhook gateway; Carland is not called directly.
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `GET` | `/webhook/partner/car/find` | Check whether a VIN exists in Carland |
+| `POST` | `/webhook/partner/new-service-visit` | Create a new service visit (idempotent) |
+| `PUT` | `/webhook/partner/edit/service-visit` | Update an existing visit or its lines/parts |
+
+---
+
+## 2. Authentication — `X-Signature`
+
+Every request under `/webhook/partner/*` must include:
+
+| Header | Value |
+|--------|--------|
+| `X-Signature` | HMAC-SHA256 hex digest (lowercase, no prefix) |
+| `Content-Type` | `application/json` (POST and PUT only) |
+
+**Shared secret:** Provided separately by Carland (out-of-band).
+
+### What gets signed
+
+| Request type | Bytes signed |
+|--------------|--------------|
+| `GET` (query only) | Raw UTF-8 query string **exactly as sent**, e.g. `vin=HHGHHHJHGHHHHHGGG` |
+| `POST` / `PUT` | Raw HTTP body bytes **exactly as sent** |
+
+Algorithm:
+
+```
+signature = HMAC-SHA256(secret, payload).hex()
+```
+
+### Important rules
+
+1. Sign the **exact bytes** on the wire — not a re-serialized JSON object.
+2. Pretty-print vs minified JSON produces **different signatures**.
+3. For GET, URL-encode the VIN if it contains special characters; sign the encoded query string.
+4. Missing or invalid signature → **401** (webhook gateway, no forward to Carland).
+
+**401 example:**
+
+```json
+{"error":"Invalid or missing signature"}
+```
+
+---
+
+## 3. JSON body — single-line (compact) format
+
+For **POST** and **PUT**, send JSON as **one compact line** (no line breaks, no extra spaces).
+
+**Correct:**
+
+```json
+{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"services":[{"serviceCode":55555,"serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"}}]}]}
+```
+
+**Incorrect** (different byte length → signature mismatch → 401):
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "source": "hyper"
+}
+```
+
+**Why:** HMAC is computed on raw body bytes. Whitespace changes the signature even when JSON is semantically identical.
+
+**Recommendation:** Serialize programmatically to compact JSON, then sign those bytes. Do not manually pretty-print in Postman unless the Pre-request Script signs `pm.request.body.raw` exactly.
+
+---
+
+## 4. Common error response format
+
+Business/validation errors from Carland (forwarded by webhook):
+
+```json
+{
+  "error": "Missed required fields",
+  "message": "vin is required",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 400
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `error` | Error category |
+| `message` | Human-readable detail |
+| `timeStamp` | Server time (ISO-8601) |
+| `status` | HTTP status code (duplicate of response status) |
+
+---
+
+## 5. GET — Check VIN existence
+
+### Request
+
+```
+GET /webhook/partner/car/find?vin=HHGHHHJHGHHHHHGGG
+```
+
+| Item | Value |
+|------|--------|
+| Query param | `vin` (required, string) |
+| Headers | `X-Signature: <hmac of "vin=HHGHHHJHGHHHHHGGG">` |
+| Body | None |
+
+### Responses
+
+| Status | Meaning | Body |
+|--------|---------|------|
+| **200 OK** | VIN registered in Carland | Empty |
+| **404 Not Found** | VIN missing or blank | Empty |
+| **400 Bad Request** | `vin` query param missing | Error JSON |
+| **401 Unauthorized** | Invalid/missing signature | `{"error":"Invalid or missing signature"}` |
+| **502 / 503 / 504** | Carland temporarily unavailable | Gateway/upstream error (no queue for GET) |
+
+### Example — VIN found
+
+```http
+GET /webhook/partner/car/find?vin=HHGHHHJHGHHHHHGGG
+X-Signature: a1b2c3d4e5f6...
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Length: 0
+```
+
+### Example — VIN not found
+
+```http
+HTTP/1.1 404 Not Found
+Content-Length: 0
+```
+
+---
+
+## 6. POST — Create service visit
+
+### Request
+
+```
+POST /webhook/partner/new-service-visit
+Content-Type: application/json
+X-Signature: <hmac of raw body bytes>
+```
+
+### Body schema
+
+Root object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `vin` | string | **Yes** | Vehicle VIN (must exist in Carland) |
+| `source` | string | No | Source label, e.g. `"hyper"` |
+| `summary` | object | No | Ignored on ingest; optional |
+| `items` | array | **Yes** | One or more visit records |
+
+Each element in `items[]`:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partnerRecordId` | long | **Yes** | Hyper's unique visit ID (idempotency key) |
+| `type` | string | No | e.g. `"Maintenance"`, `"Repair"` |
+| `date` | string (date) | No | `YYYY-MM-DD` |
+| `mileage` | integer | No | Odometer at service |
+| `serviceCenterId` | long | No | Partner/service center ID (default: Hyper) |
+| `serviceCenterName` | string | No | Display name |
+| `dealer` | string | No | Dealer name |
+| `amount` | money | No | Total visit cost |
+| `serviceGroups` | string[] | No | e.g. `["Engine","Brakes"]` |
+| `services` | array | No | Service lines |
+| `parts` | array | No | Parts used |
+
+`services[]` line:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `serviceCode` | integer | No | Hyper line identifier |
+| `universalServiceId` | string | No | Universal service catalog ID (`"other"` → stored as empty) |
+| `serviceName` | string | No | Line description |
+| `cost` | money | No | Line cost |
+| `nextServiceDate` | string (date) | No | Next due date |
+| `nextServiceMileage` | integer | No | Next due mileage |
+
+`parts[]`:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Part name |
+| `qty` | decimal | No | Quantity |
+| `unit` | string | No | e.g. `"pc"`, `"L"` |
+
+`money` object:
+
+```json
+{"amount": 85.00, "currency": "AZN"}
+```
+
+### Idempotency behavior
+
+| Scenario | HTTP | Notes |
+|----------|------|-------|
+| New visit created | **200** | `visitsCreated > 0` |
+| Visit exists; new lines/parts added | **200** | `linesCreated > 0` or `partsCreated > 0` |
+| Visit + all lines/parts already exist | **409** | No new data |
+| VIN not in Carland | **404** | |
+| Missing `vin` or `items` | **400** | |
+| Invalid JSON | **400** | |
+| Invalid signature | **401** | |
+| Carland down | **202 Accepted** | Queued for retry (see §8) |
+
+Items **without** `partnerRecordId` are skipped silently (not an error).
+
+Duplicate line match key: `serviceCode + universalServiceId + serviceName`.  
+Duplicate part match key: `name + qty + unit`.
+
+### Example request body (single line)
+
+```json
+{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"serviceCenterId":1,"serviceCenterName":"HyperService","dealer":"Test Dealer","amount":{"amount":85.00,"currency":"AZN"},"serviceGroups":["Engine"],"services":[{"serviceCode":55555,"universalServiceId":"Engine oil & filter","serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"},"nextServiceDate":"2027-06-15","nextServiceMileage":72000}],"parts":[{"name":"Engine oil filter","qty":1,"unit":"pc"}]}]}
+```
+
+### Example — 200 Created
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "message": "Visit and service lines created",
+  "visitsCreated": 1,
+  "visitsSkipped": 0,
+  "linesCreated": 1,
+  "linesSkipped": 0,
+  "partsCreated": 1,
+  "partsSkipped": 0,
+  "visits": [
+    {
+      "partnerRecordId": 33333,
+      "visitId": 9876,
+      "visitCreated": true,
+      "lines": [
+        {"serviceCode": 55555, "lineId": 4412, "created": true}
+      ]
+    }
+  ]
+}
+```
+
+### Example — 200 Partial append (visit existed, new line added)
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "message": "Visit updated with new service lines or parts",
+  "visitsCreated": 0,
+  "visitsSkipped": 1,
+  "linesCreated": 1,
+  "linesSkipped": 0,
+  "partsCreated": 0,
+  "partsSkipped": 0,
+  "visits": [
+    {
+      "partnerRecordId": 33333,
+      "visitId": 9876,
+      "visitCreated": false,
+      "lines": [
+        {"serviceCode": 55556, "lineId": 4413, "created": true}
+      ]
+    }
+  ]
+}
+```
+
+### Example — 409 Already exists
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "message": "Visit and service lines already exist",
+  "visitsCreated": 0,
+  "visitsSkipped": 1,
+  "linesCreated": 0,
+  "linesSkipped": 1,
+  "partsCreated": 0,
+  "partsSkipped": 1,
+  "visits": [
+    {
+      "partnerRecordId": 33333,
+      "visitId": 9876,
+      "visitCreated": false,
+      "lines": [
+        {"serviceCode": 55555, "lineId": 4412, "created": false}
+      ]
+    }
+  ]
+}
+```
+
+### Example — 404 VIN not found
+
+```json
+{
+  "error": "Resource not found error",
+  "message": "Car not found for vin: UNKNOWNVIN123",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 404
+}
+```
+
+### Example — 400 Missing field
+
+```json
+{
+  "error": "Missed required fields",
+  "message": "items is required",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 400
+}
+```
+
+---
+
+## 7. PUT — Update service visit
+
+### Request
+
+```
+PUT /webhook/partner/edit/service-visit
+Content-Type: application/json
+X-Signature: <hmac of raw body bytes>
+```
+
+### Body schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `vin` | string | **Yes** | Vehicle VIN |
+| `partnerRecordId` | long | **Yes** | Hyper visit ID (must exist for this VIN) |
+| `type` | string | No | Update visit type |
+| `date` | string (date) | No | Update service date |
+| `mileage` | integer | No | Update mileage |
+| `serviceCenterId` | long | No | Update service center |
+| `serviceCenterName` | string | No | Update center name |
+| `dealer` | string | No | Update dealer |
+| `amount` | money | No | Update total cost |
+| `serviceGroups` | string[] | No | Replace service groups |
+| `services` | array | No | Update existing lines (matched by `serviceCode`) |
+| `parts` | array | No | Update existing parts |
+
+At least one updatable field (visit, line, or part) is required.
+
+**Line update** (`services[]`): `serviceCode` is **required** per line; other fields are optional and only applied when sent.
+
+**Part update** (`parts[]`): identify by `id` (Carland DB id), or by `name` + `qty` + `unit`.
+
+### Responses
+
+| Status | Meaning |
+|--------|---------|
+| **200 OK** | At least one field/line/part changed |
+| **409 Conflict** | Visit found but payload matches current data (no changes) |
+| **404 Not Found** | VIN, visit, line, or part not found |
+| **400 Bad Request** | Validation error (missing required fields) |
+| **401 Unauthorized** | Invalid signature |
+| **202 Accepted** | Carland down; request queued (§8) |
+
+### Example request body (single line)
+
+```json
+{"vin":"HHGHHHJHGHHHHHGGG","partnerRecordId":33333,"mileage":53000,"services":[{"serviceCode":55555,"serviceName":"Engine oil & filter changed","cost":{"amount":95.00,"currency":"AZN"},"nextServiceMileage":75000}]}
+```
+
+### Example — 200 Updated
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "message": "Visit and service lines updated",
+  "partnerRecordId": 33333,
+  "visitId": 9876,
+  "visitFieldsUpdated": 1,
+  "linesUpdated": 1,
+  "partsUpdated": 0,
+  "lines": [
+    {"serviceCode": 55555, "lineId": 4412, "updated": true}
+  ],
+  "parts": []
+}
+```
+
+### Example — 409 No changes
+
+```json
+{
+  "vin": "HHGHHHJHGHHHHHGGG",
+  "message": "Visit and service lines already up to date",
+  "partnerRecordId": 33333,
+  "visitId": 9876,
+  "visitFieldsUpdated": 0,
+  "linesUpdated": 0,
+  "partsUpdated": 0,
+  "lines": [
+    {"serviceCode": 55555, "lineId": 4412, "updated": false}
+  ],
+  "parts": []
+}
+```
+
+### Example — 404 Visit not found
+
+```json
+{
+  "error": "Resource not found error",
+  "message": "Visit not found for partnerRecordId=99999 and vin=HHGHHHJHGHHHHHGGG",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 404
+}
+```
+
+### Example — 404 Service line not found
+
+```json
+{
+  "error": "Resource not found error",
+  "message": "Service line not found for serviceCode=88888 in visit partnerRecordId=33333",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 404
+}
+```
+
+### Example — 400 Validation
+
+```json
+{
+  "error": "Missed required fields",
+  "message": "At least one visit, service line or part field must be provided for update",
+  "timeStamp": "2026-06-30T14:22:10.123",
+  "status": 400
+}
+```
+
+---
+
+## 8. Async queue (POST & PUT only)
+
+When Carland is temporarily unreachable, POST and PUT are **accepted and queued** instead of failing immediately.
+
+| Status | Body |
+|--------|------|
+| **202 Accepted** | `{"status":"queued","message":"Carland unavailable, request queued for delivery"}` |
+
+- Queued requests are replayed automatically when Carland recovers.
+- **GET** is not queued; use retry on 502/503/504.
+- On successful replay, Carland returns the normal 200/409/404 response.
+- **409** on replay means the visit was already ingested — treat as success for idempotency.
+
+---
+
+## 9. Status code summary
+
+| Code | When |
+|------|------|
+| **200** | Success (GET: VIN exists; POST: created/updated; PUT: changes applied) |
+| **202** | POST/PUT queued (Carland down) |
+| **400** | Invalid/missing fields, malformed JSON |
+| **401** | Invalid or missing `X-Signature` |
+| **404** | VIN, visit, line, or part not found |
+| **409** | POST/PUT idempotent no-op (data already exists / unchanged) |
+| **502/503/504** | Upstream unavailable (GET — retry) |
+
+---
+
+## 10. Integration checklist for Hyper
+
+- [ ] Store shared `WEBHOOK_SECRET` securely
+- [ ] Always serialize JSON to **single compact line** before signing
+- [ ] Sign **raw body bytes** for POST/PUT; sign **query string** for GET
+- [ ] Use stable `partnerRecordId` per visit for idempotency
+- [ ] Treat **409** on POST/PUT as success when data is already present
+- [ ] On **202**, optionally poll GET `/car/find` or retry POST later
+- [ ] Use `serviceCode` to target specific lines on PUT
+- [ ] Ensure VIN is registered in Carland before POST
+
+---
+
+## 11. cURL examples
+
+### GET — VIN check
+
+```bash
+VIN="HHGHHHJHGHHHHHGGG"
+QUERY="vin=${VIN}"
+SIG=$(printf '%s' "$QUERY" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+
+curl -s -o /dev/null -w "%{http_code}" \
+  "https://digital-innovation.agency/webhook/partner/car/find?${QUERY}" \
+  -H "X-Signature: ${SIG}"
+```
+
+### POST — new visit
+
+```bash
+BODY='{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"services":[{"serviceCode":55555,"serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"}}]}]}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+
+curl -X POST "https://digital-innovation.agency/webhook/partner/new-service-visit" \
+  -H "Content-Type: application/json" \
+  -H "X-Signature: ${SIG}" \
+  --data-binary "$BODY"
+```
+
+### PUT — update visit
+
+```bash
+BODY='{"vin":"HHGHHHJHGHHHHHGGG","partnerRecordId":33333,"mileage":53000,"services":[{"serviceCode":55555,"nextServiceMileage":75000}]}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
+
+curl -X PUT "https://digital-innovation.agency/webhook/partner/edit/service-visit" \
+  -H "Content-Type: application/json" \
+  -H "X-Signature: ${SIG}" \
+  --data-binary "$BODY"
+```

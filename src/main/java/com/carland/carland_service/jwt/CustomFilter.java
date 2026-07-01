@@ -26,6 +26,10 @@ public class CustomFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         if (path.startsWith("/webhook/")) {
+            if ("/webhook/partner/test".equals(path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             if (!internalTokenValidator.isValid(request)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
