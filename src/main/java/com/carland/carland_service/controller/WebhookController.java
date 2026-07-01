@@ -49,6 +49,7 @@ public class WebhookController {
 
     @PostMapping("/new-service-visit")
     public PartnerNewServiceVisitResult newServiceVisit(@RequestBody CarVinServiceHistoryV2Response request) {
+        System.err.println("bura islediiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
         return partnerServiceVisitIngestService.ingest(request);
     }
 }
