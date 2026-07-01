@@ -66,15 +66,21 @@ public class PartnerServiceVisitUpdateServiceImpl implements PartnerServiceVisit
                 .parts(new ArrayList<>())
                 .build();
 
-        applyVisitUpdates(visit, request);
+        int visitFieldsUpdated = applyVisitUpdates(visit, request);
+        result.setVisitFieldsUpdated(visitFieldsUpdated);
         result.setLinesUpdated(updateLines(visit, request, result));
         result.setPartsUpdated(updateParts(visit, request, result));
 
-        visitRepository.saveAndFlush(visit);
-        recalculateAllTimeCost(car);
-        hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
+        boolean changed = visitFieldsUpdated > 0 || result.getLinesUpdated() > 0 || result.getPartsUpdated() > 0;
+        if (changed) {
+            visitRepository.saveAndFlush(visit);
+            recalculateAllTimeCost(car);
+            hyperPercentageSyncService.syncFromVisits(car, visitRepository.findAllByCarOrderByLastServiceDateDescIdDesc(car));
+            result.setMessage("Visit and service lines updated");
+        } else {
+            result.setMessage("Visit and service lines already up to date");
+        }
 
-        result.setMessage("Visit and service lines updated");
         return result;
     }
 
@@ -112,34 +118,56 @@ public class PartnerServiceVisitUpdateServiceImpl implements PartnerServiceVisit
         return request.getParts() != null && !request.getParts().isEmpty();
     }
 
-    private void applyVisitUpdates(Visit visit, PartnerUpdateServiceVisitRequest request) {
-        if (request.getType() != null) {
+    private int applyVisitUpdates(Visit visit, PartnerUpdateServiceVisitRequest request) {
+        int changed = 0;
+
+        if (request.getType() != null && !Objects.equals(visit.getServiceType(), request.getType())) {
             visit.setServiceType(request.getType());
+            changed++;
         }
-        if (request.getDate() != null) {
+        if (request.getDate() != null && !Objects.equals(visit.getLastServiceDate(), request.getDate())) {
             visit.setLastServiceDate(request.getDate());
+            changed++;
         }
-        if (request.getMileage() != null) {
+        if (request.getMileage() != null && !Objects.equals(visit.getLastServiceMileage(), request.getMileage())) {
             visit.setLastServiceMileage(request.getMileage());
+            changed++;
         }
-        if (request.getDealer() != null) {
+        if (request.getDealer() != null && !Objects.equals(visit.getDealer(), request.getDealer())) {
             visit.setDealer(request.getDealer());
+            changed++;
         }
-        if (request.getServiceGroups() != null) {
+        if (request.getServiceGroups() != null && !Objects.equals(visit.getServiceGroups(), request.getServiceGroups())) {
             visit.setServiceGroups(new ArrayList<>(request.getServiceGroups()));
+            changed++;
         }
         if (request.getServiceCenterId() != null || StringUtils.hasText(request.getServiceCenterName())) {
             Long partnerId = request.getServiceCenterId() != null ? request.getServiceCenterId() : visit.getServiceCenterId();
             if (partnerId == null) {
                 partnerId = DEFAULT_PARTNER.getId();
             }
-            visit.setServiceCenterId(partnerId);
-            visit.setServiceCenterName(resolvePartnerName(request, partnerId, visit.getServiceCenterName()));
+            String partnerName = resolvePartnerName(request, partnerId, visit.getServiceCenterName());
+            if (!Objects.equals(visit.getServiceCenterId(), partnerId)) {
+                visit.setServiceCenterId(partnerId);
+                changed++;
+            }
+            if (!Objects.equals(visit.getServiceCenterName(), partnerName)) {
+                visit.setServiceCenterName(partnerName);
+                changed++;
+            }
         }
         if (request.getAmount() != null) {
-            visit.setFinalCostAmount(request.getAmount().getAmount());
-            visit.setFinalCostCurrency(request.getAmount().getCurrency());
+            if (!decimalEquals(visit.getFinalCostAmount(), request.getAmount().getAmount())) {
+                visit.setFinalCostAmount(request.getAmount().getAmount());
+                changed++;
+            }
+            if (!Objects.equals(visit.getFinalCostCurrency(), request.getAmount().getCurrency())) {
+                visit.setFinalCostCurrency(request.getAmount().getCurrency());
+                changed++;
+            }
         }
+
+        return changed;
     }
 
     private int updateLines(Visit visit, PartnerUpdateServiceVisitRequest request, PartnerUpdateServiceVisitResult result) {
@@ -160,13 +188,15 @@ public class PartnerServiceVisitUpdateServiceImpl implements PartnerServiceVisit
                                 + " in visit partnerRecordId=" + request.getPartnerRecordId());
             }
 
-            applyLineUpdates(existingLine, lineRequest);
-            updated++;
+            boolean lineChanged = applyLineUpdates(existingLine, lineRequest);
+            if (lineChanged) {
+                updated++;
+            }
 
             result.getLines().add(LineUpdateDetail.builder()
                     .serviceCode(existingLine.getServiceCode())
                     .lineId(existingLine.getId())
-                    .updated(true)
+                    .updated(lineChanged)
                     .build());
         }
         return updated;
@@ -180,50 +210,86 @@ public class PartnerServiceVisitUpdateServiceImpl implements PartnerServiceVisit
         int updated = 0;
         for (ServiceHistoryPartV2Response partRequest : request.getParts()) {
             ServiceHistoryPartV2 existingPart = findPart(visit, partRequest, request.getPartnerRecordId());
-            applyPartUpdates(existingPart, partRequest);
-            updated++;
+            boolean partChanged = applyPartUpdates(existingPart, partRequest);
+            if (partChanged) {
+                updated++;
+            }
 
             result.getParts().add(PartUpdateDetail.builder()
                     .name(existingPart.getName())
                     .qty(existingPart.getQty())
                     .unit(existingPart.getUnit())
                     .partId(existingPart.getId())
-                    .updated(true)
+                    .updated(partChanged)
                     .build());
         }
         return updated;
     }
 
-    private void applyLineUpdates(ServiceHistoryV2 target, ServiceHistoryLineV2Response source) {
-        if (source.getServiceName() != null) {
+    private boolean applyLineUpdates(ServiceHistoryV2 target, ServiceHistoryLineV2Response source) {
+        boolean changed = false;
+
+        if (source.getServiceName() != null && !Objects.equals(target.getServiceName(), source.getServiceName())) {
             target.setServiceName(source.getServiceName());
+            changed = true;
         }
         if (source.getUniversalServiceId() != null) {
-            target.setUniversalServiceId(normalizeUniversalServiceId(source.getUniversalServiceId()));
+            String normalized = normalizeUniversalServiceId(source.getUniversalServiceId());
+            if (!Objects.equals(target.getUniversalServiceId(), normalized)) {
+                target.setUniversalServiceId(normalized);
+                changed = true;
+            }
         }
         if (source.getCost() != null) {
             MoneyResponse cost = source.getCost();
-            target.setCostAmount(cost.getAmount());
-            target.setCostCurrency(cost.getCurrency());
+            if (!decimalEquals(target.getCostAmount(), cost.getAmount())) {
+                target.setCostAmount(cost.getAmount());
+                changed = true;
+            }
+            if (!Objects.equals(target.getCostCurrency(), cost.getCurrency())) {
+                target.setCostCurrency(cost.getCurrency());
+                changed = true;
+            }
         }
-        if (source.getNextServiceDate() != null) {
+        if (source.getNextServiceDate() != null && !Objects.equals(target.getNextServiceDate(), source.getNextServiceDate())) {
             target.setNextServiceDate(source.getNextServiceDate());
+            changed = true;
         }
-        if (source.getNextServiceMileage() != null) {
+        if (source.getNextServiceMileage() != null && !Objects.equals(target.getNextServiceMileage(), source.getNextServiceMileage())) {
             target.setNextServiceMileage(source.getNextServiceMileage());
+            changed = true;
         }
+
+        return changed;
     }
 
-    private void applyPartUpdates(ServiceHistoryPartV2 target, ServiceHistoryPartV2Response source) {
-        if (source.getName() != null) {
+    private boolean applyPartUpdates(ServiceHistoryPartV2 target, ServiceHistoryPartV2Response source) {
+        boolean changed = false;
+
+        if (source.getName() != null && !Objects.equals(target.getName(), source.getName())) {
             target.setName(source.getName());
+            changed = true;
         }
-        if (source.getQty() != null) {
+        if (source.getQty() != null && !decimalEquals(target.getQty(), source.getQty())) {
             target.setQty(source.getQty());
+            changed = true;
         }
-        if (source.getUnit() != null) {
+        if (source.getUnit() != null && !Objects.equals(target.getUnit(), source.getUnit())) {
             target.setUnit(source.getUnit());
+            changed = true;
         }
+
+        return changed;
+    }
+
+    private boolean decimalEquals(BigDecimal left, BigDecimal right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.compareTo(right) == 0;
     }
 
     private ServiceHistoryV2 findLineByServiceCode(Visit visit, Integer serviceCode) {

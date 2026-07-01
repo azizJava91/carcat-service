@@ -17,6 +17,7 @@ public class PartnerUpdateServiceVisitResult {
     private String message;
     private Long partnerRecordId;
     private Long visitId;
+    private int visitFieldsUpdated;
     private int linesUpdated;
     private int partsUpdated;
     @Builder.Default

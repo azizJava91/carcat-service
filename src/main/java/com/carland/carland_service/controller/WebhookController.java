@@ -60,7 +60,15 @@ public class WebhookController {
 
     @PutMapping("/edit/service-visit")
     public ResponseEntity<PartnerUpdateServiceVisitResult> updateServiceVisit(@RequestBody PartnerUpdateServiceVisitRequest request) {
-        return ResponseEntity.ok(partnerServiceVisitUpdateService.update(request));
+        PartnerUpdateServiceVisitResult result = partnerServiceVisitUpdateService.update(request);
+        return ResponseEntity.status(resolveUpdateStatus(result)).body(result);
+    }
+
+    private HttpStatus resolveUpdateStatus(PartnerUpdateServiceVisitResult result) {
+        if (result.getVisitFieldsUpdated() > 0 || result.getLinesUpdated() > 0 || result.getPartsUpdated() > 0) {
+            return HttpStatus.OK;
+        }
+        return HttpStatus.CONFLICT;
     }
 
     private HttpStatus resolveIngestStatus(PartnerNewServiceVisitResult result) {
