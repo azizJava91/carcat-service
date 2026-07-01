@@ -26,6 +26,10 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
 
     Optional<Visit> findByCarAndHyperRecordId(Car car, Long hyperRecordId);
 
+    @EntityGraph(attributePaths = {"services"})
+    @Query("SELECT v FROM Visit v WHERE v.car.carId = :carId AND v.hyperRecordId = :hyperRecordId")
+    Optional<Visit> findWithDetailsByCarIdAndHyperRecordId(@Param("carId") Long carId, @Param("hyperRecordId") Long hyperRecordId);
+
     @EntityGraph(attributePaths = {"services", "parts"})
     Optional<Visit> findWithDetailsByCarAndHyperRecordId(Car car, Long hyperRecordId);
 }

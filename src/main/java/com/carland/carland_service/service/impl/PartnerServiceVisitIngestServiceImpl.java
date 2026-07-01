@@ -75,9 +75,11 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
                 continue;
             }
 
-            Optional<Visit> existing = visitRepository.findWithDetailsByCarAndHyperRecordId(car, item.getPartnerRecordId());
+            Optional<Visit> existing = visitRepository.findWithDetailsByCarIdAndHyperRecordId(
+                    car.getCarId(), item.getPartnerRecordId());
             if (existing.isPresent()) {
                 Visit visit = existing.get();
+                visit.getParts().size();
                 VisitIngestDetail detail = appendMissingLinesAndParts(visit, item, result);
                 touchedVisits.add(visit);
                 result.getVisits().add(detail);
@@ -258,20 +260,27 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
 
     private String lineKey(ServiceHistoryV2 line) {
         return Objects.toString(line.getServiceCode(), "")
-                + "|" + Objects.toString(line.getUniversalServiceId(), "")
+                + "|" + normalizeUniversalServiceId(line.getUniversalServiceId())
                 + "|" + Objects.toString(line.getServiceName(), "");
     }
 
     private String partKey(ServiceHistoryPartV2Response part) {
         return Objects.toString(part.getName(), "")
-                + "|" + Objects.toString(part.getQty(), "")
+                + "|" + normalizeQty(part.getQty())
                 + "|" + Objects.toString(part.getUnit(), "");
     }
 
     private String partKey(ServiceHistoryPartV2 part) {
         return Objects.toString(part.getName(), "")
-                + "|" + Objects.toString(part.getQty(), "")
+                + "|" + normalizeQty(part.getQty())
                 + "|" + Objects.toString(part.getUnit(), "");
+    }
+
+    private String normalizeQty(BigDecimal qty) {
+        if (qty == null) {
+            return "";
+        }
+        return qty.stripTrailingZeros().toPlainString();
     }
 
     private String resolvePartnerName(ServiceHistoryVisitV2Response item, Long partnerId) {
