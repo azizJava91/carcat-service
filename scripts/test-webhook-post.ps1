@@ -15,7 +15,7 @@ Write-Host "Body bytes: $($bodyBytes.Length)"
 Write-Host "Signature : $sig"
 Write-Host ""
 
-curl.exe -v -X POST "https://digital-innovation.agency/webhook/partner/edit/service-visit" `
+curl.exe -v -X POST "https://digital-innovation.agency/webhook/partner/new-service-visit" `
   -H "Content-Type: application/json" `
   -H "X-Signature: $sig" `
   --data-binary "@$bodyPath"

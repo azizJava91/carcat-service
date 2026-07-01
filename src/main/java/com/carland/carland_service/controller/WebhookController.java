@@ -52,7 +52,7 @@ public class WebhookController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/edit/service-visit")
+    @PostMapping("/new-service-visit")
     public ResponseEntity<PartnerNewServiceVisitResult> newServiceVisit(@RequestBody CarVinServiceHistoryV2Response request) {
         PartnerNewServiceVisitResult result = partnerServiceVisitIngestService.ingest(request);
         return ResponseEntity.status(resolveIngestStatus(result)).body(result);
