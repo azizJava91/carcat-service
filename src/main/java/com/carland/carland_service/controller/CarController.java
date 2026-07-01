@@ -88,14 +88,14 @@ public class CarController {
 
 
     @GetMapping("/get/by/vin")
-    public CarResponse getCarByVinCode(@RequestBody CarRequest carRequest,
+    public CarResponse getCarByVinCode(@RequestParam String vin,
                                        @RequestHeader("Authorization") String token,
                                        @RequestHeader("phoneNumber") String phoneNumber,
                                        @RequestHeader("X-User-Id") String userIdHeader,
                                        @RequestHeader("X-Client-Timezone") String timezone,
                                        @RequestHeader("Accept-Language") String acceptLanguage) {
         System.err.println("/get/by/vin cagrildi");
-        return carService.getCarByVinCode(carRequest, phoneNumber, userIdHeader, timezone, acceptLanguage);
+        return carService.getCarByVinCode(vin, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
     @GetMapping("/get/list/by/user")

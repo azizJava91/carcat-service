@@ -1215,15 +1215,13 @@ public class CarServiceImpl implements CarService {
 
 
     @Override
-    public CarResponse getCarByVinCode(CarRequest carRequest, String phoneNumber, String userIdHeader,
+    public CarResponse getCarByVinCode(String vin, String phoneNumber, String userIdHeader,
                                        String timezone, String acceptLanguage) {
 
-        if (carRequest == null || phoneNumber == null || userIdHeader == null) {
+        if (vin == null || phoneNumber == null || userIdHeader == null) {
             throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
         }
-        if (carRequest.getVin() == null) {
-            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
-        }
+
 
         Customer customer = customerRepository.findByUserIdAndPhoneNumberAndStatus(Long.valueOf(userIdHeader), phoneNumber, EnumUserStatus.ACTIVE.name());
 
@@ -1231,7 +1229,7 @@ public class CarServiceImpl implements CarService {
             throw new UserNotFoundException(EnumMessagesLangValues.USER_NOT_FOUND.getMessageByLang(acceptLanguage));
         }
 
-        Car existingCar = carRepository.findByVin(carRequest.getVin());
+        Car existingCar = carRepository.findByVin(vin);
 
 
         if (existingCar != null && !existingCar.getCustomer().getUserId().equals(customer.getUserId())) {

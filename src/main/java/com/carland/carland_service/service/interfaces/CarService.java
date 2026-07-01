@@ -13,7 +13,7 @@ import java.util.List;
 public interface CarService {
     CarResponse addCar(CarRequest carRequest, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage) ;
 
-    CarResponse getCarByVinCode(CarRequest carRequest, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage);
+    CarResponse getCarByVinCode(String  vin, String phoneNumber, String userIdHeader, String timezone, String acceptLanguage);
 
 
     List<CarResponse> getCarListByUserId( String phoneNumber, String userIdHeader, String timezone, String acceptLanguage);
