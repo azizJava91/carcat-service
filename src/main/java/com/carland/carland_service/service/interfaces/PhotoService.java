@@ -31,4 +31,7 @@ public interface PhotoService {
     PhotoResponse uploadPartnerBadgeLogo(MultipartFile file, Long partnerId);
 
     ResponseEntity<byte[]> getPartnerBadgeLogoById(Long partnerId);
+
+    PhotoResponse deleteOtherCarPhoto(Long carId, String acceptLanguage);
+
 }

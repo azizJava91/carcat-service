@@ -39,6 +39,12 @@ public class PhotoController {
         return photoService.deleteCarPhoto(role, carId, phoneNumber, userIdHeader, timezone, acceptLanguage);
     }
 
+    @DeleteMapping("/for/car/delete/other")
+    public PhotoResponse deleteOtherCarPhoto(@RequestParam("carId") Long carId,
+                                             @RequestHeader("Accept-Language") String acceptLanguage) {
+        return photoService.deleteOtherCarPhoto(carId, acceptLanguage);
+    }
+
     @GetMapping(value = "/for/car/get", produces = MediaType.ALL_VALUE)
     public ResponseEntity<byte[]> getCarPhoto(
             @RequestHeader("role") String role,
@@ -64,7 +70,7 @@ public class PhotoController {
 
     @PostMapping(value = "/for/partner/badge-logo/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public PhotoResponse uploadPartnerBadgeLogo(@RequestPart("file") MultipartFile file,
-                                                  @RequestParam("partnerId") Long partnerId) {
+                                                @RequestParam("partnerId") Long partnerId) {
         return photoService.uploadPartnerBadgeLogo(file, partnerId);
     }
 

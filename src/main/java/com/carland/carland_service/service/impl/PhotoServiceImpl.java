@@ -258,6 +258,33 @@ public class PhotoServiceImpl implements PhotoService {
                 .body(partnerBadgeLogo.getImageData());
     }
 
+    @Override
+    public PhotoResponse deleteOtherCarPhoto(Long carId, String acceptLanguage) {
+        if ( acceptLanguage == null) {
+            throw new MissingFieldException(EnumMessagesLangValues.MISSING_BODY.getMessageByLang(acceptLanguage));
+        }
+
+
+
+        Car car = carRepository.findByCarId(carId);
+
+        if (car == null) {
+            throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
+        }
+
+        CarPhoto carPhoto = carPhotoRepository.findByCarId(carId);
+
+        if (carPhoto == null) {
+            throw new ResourceNotFoundException(EnumMessagesLangValues.PHOTO_NOT_FOUND.getMessageByLang(acceptLanguage));
+        }
+
+        carPhotoRepository.delete(carPhoto);
+
+        return PhotoResponse.builder()
+                .message(EnumMessagesLangValues.SUCCESS.getMessageByLang(acceptLanguage))
+                .build();
+    }
+
 
     @Override
     @Transactional

@@ -15,6 +15,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     List<Car> findAllByCustomer(Customer customer);
 
+    Car findByCarId(Long carId);
 
     Car findByCarIdAndCustomer(Long carId, Customer customer);
 
