@@ -55,8 +55,10 @@ public class WebhookController {
 
     private HttpStatus resolveIngestStatus(PartnerNewServiceVisitResult result) {
         if (result.getVisitsCreated() > 0 || result.getLinesCreated() > 0 || result.getPartsCreated() > 0) {
+            System.err.println("isledi");
             return HttpStatus.OK;
         }
+        System.err.println("conflict");
         return HttpStatus.CONFLICT;
     }
 }

@@ -1,6 +1,7 @@
 package com.carland.carland_service.filter;
 
 import com.carland.carland_service.util.HmacSignatureValidator;
+import com.carland.carland_service.util.InternalTokenValidator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ public class WebhookSignatureFilter extends OncePerRequestFilter {
     private static final String TEST_PATH = "/webhook/partner/test";
 
     private final HmacSignatureValidator hmacSignatureValidator;
+    private final InternalTokenValidator internalTokenValidator;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,6 +36,12 @@ public class WebhookSignatureFilter extends OncePerRequestFilter {
         }
 
         CachedBodyHttpServletRequest wrapped = new CachedBodyHttpServletRequest(request);
+
+        if (internalTokenValidator.isValid(request)) {
+            filterChain.doFilter(wrapped, response);
+            return;
+        }
+
         byte[] body = wrapped.getCachedBody();
 
         if (!hmacSignatureValidator.isValid(wrapped, body)) {
