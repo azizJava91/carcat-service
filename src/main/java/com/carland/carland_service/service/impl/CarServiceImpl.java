@@ -1165,7 +1165,9 @@ public class CarServiceImpl implements CarService {
         return response;
     }
 
-    /** Schedules the async percentage + Hyper sync to run after the addCar transaction commits. */
+    /**
+     * Schedules the async percentage + Hyper sync to run after the addCar transaction commits.
+     */
     private void triggerAfterAddCarSync(Long carId, String vin, String phoneNumber,
                                         String userIdHeader, String timezone, String acceptLanguage) {
         log.info("[pct-status-debug] addCar scheduling async sync after commit | carId={}, vin={}", carId, vin);
@@ -1231,13 +1233,13 @@ public class CarServiceImpl implements CarService {
 
         Car existingCar = carRepository.findByVin(vin);
 
-
-        if (existingCar != null && !existingCar.getCustomer().getUserId().equals(customer.getUserId())) {
-            throw new NotMatchException(EnumMessagesLangValues.CAR_NOT_MATCH_WITH_CUSTOMER.getMessageByLang(acceptLanguage));
-        }
-
         if (existingCar == null) {
             throw new ResourceNotFoundException(EnumMessagesLangValues.CAR_NOT_FOUND.getMessageByLang(acceptLanguage));
+        }
+
+        Customer carOwner = existingCar.getCustomer();
+        if (carOwner != null && !carOwner.getUserId().equals(customer.getUserId())) {
+            throw new NotMatchException(EnumMessagesLangValues.CAR_NOT_MATCH_WITH_CUSTOMER.getMessageByLang(acceptLanguage));
         }
 
         return convertCarEntityToResponse(existingCar, acceptLanguage, "null");
@@ -1489,9 +1491,10 @@ public class CarServiceImpl implements CarService {
     private CarResponse convertCarEntityToResponse(Car car, String acceptLanguage, String resource) {
         Color color = colorRepository.findByColorId(car.getColorId());
         String colorResponse = color != null ? ColorTranslation.translate(color.getColor(), acceptLanguage) : "unknown";
+        Customer customer = car.getCustomer();
         return CarResponse.builder()
                 .carId(car.getCarId())
-                .customerId(car.getCustomer().getUserId())
+                .customerId(customer != null ? customer.getUserId() : 0L)
                 .vin(car.getVin())
                 .plateNumber(car.getPlateNumber())
                 .brand(car.getBrand())
