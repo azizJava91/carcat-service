@@ -1,5 +1,6 @@
 package com.carland.carland_service.service.impl;
 
+import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinResponse;
 import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
 import com.carland.carland_service.dto.response.v2.LineIngestDetail;
 import com.carland.carland_service.dto.response.v2.MoneyResponse;
@@ -21,6 +22,7 @@ import com.carland.carland_service.repository.VisitRepository;
 import com.carland.carland_service.service.HyperPercentageSyncService;
 import com.carland.carland_service.service.PartnerLookupService;
 import com.carland.carland_service.service.PartnerServiceVisitIngestService;
+import com.carland.carland_service.service.mapper.HyperWebhookIngestMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,12 +50,12 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
 
     @Override
     @Transactional
-    public PartnerNewServiceVisitResult ingest(CarVinServiceHistoryV2Response request) {
+    public PartnerNewServiceVisitResult ingest(HyperVehicleByVinResponse request) {
         if (request == null || request.getVin() == null || request.getVin().isBlank()) {
             throw new MissingFieldException("vin is required");
         }
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new MissingFieldException("items is required");
+        if (request.getServiceHistory() == null || request.getServiceHistory().isEmpty()) {
+            throw new MissingFieldException("serviceHistory is required");
         }
 
         String vin = request.getVin().trim();
@@ -61,6 +63,13 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
         if (car == null) {
             throw new ResourceNotFoundException("Car not found for vin: " + vin);
         }
+
+        applyCarMetadata(car, request);
+        return ingestVisits(car, HyperWebhookIngestMapper.toIngestRequest(request));
+    }
+
+    private PartnerNewServiceVisitResult ingestVisits(Car car, CarVinServiceHistoryV2Response request) {
+        String vin = request.getVin().trim();
 
         PartnerNewServiceVisitResult result = PartnerNewServiceVisitResult.builder()
                 .vin(vin)
@@ -104,6 +113,47 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
 
         result.setMessage(resolveMessage(result));
         return result;
+    }
+
+    private void applyCarMetadata(Car car, HyperVehicleByVinResponse hyper) {
+        boolean changed = false;
+
+        if (hyper.getPlate() != null && !hyper.getPlate().isBlank()) {
+            car.setPlateNumber(hyper.getPlate().trim());
+            changed = true;
+        }
+        if (hyper.getCurrentMileage() != null) {
+            car.setMileage(hyper.getCurrentMileage().longValue());
+            changed = true;
+        }
+        if (hyper.getBrand() != null && !hyper.getBrand().isBlank()) {
+            car.setBrand(hyper.getBrand());
+            changed = true;
+        }
+        if (hyper.getModel() != null && !hyper.getModel().isBlank()) {
+            car.setModel(hyper.getModel());
+            changed = true;
+        }
+        if (hyper.getYear() != null) {
+            car.setModelYear(hyper.getYear());
+            changed = true;
+        }
+        if (hyper.getBodyType() != null && !hyper.getBodyType().isBlank()) {
+            car.setBodyType(hyper.getBodyType());
+            changed = true;
+        }
+        if (hyper.getEngineType() != null && !hyper.getEngineType().isBlank()) {
+            car.setEngineType(hyper.getEngineType());
+            changed = true;
+        }
+        if (hyper.getEngineVolume() != null) {
+            car.setEngineVolume((int) (hyper.getEngineVolume() * 1000));
+            changed = true;
+        }
+
+        if (changed) {
+            carRepository.save(car);
+        }
     }
 
     private void refreshPercentagesFromTouchedVisits(Car car, List<Visit> touchedVisits) {
@@ -209,6 +259,7 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
         String partnerName = resolvePartnerName(item, partnerId);
 
         MoneyResponse amount = item.getAmount();
+        MoneyResponse cost = item.getCost();
         Visit visit = Visit.builder()
                 .car(car)
                 .hyperRecordId(item.getPartnerRecordId())
@@ -216,8 +267,11 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
                 .lastServiceDate(item.getDate())
                 .lastServiceMileage(item.getMileage())
                 .dealer(item.getDealer())
+                .invoiceNumber(item.getInvoiceNumber())
                 .serviceCenterId(partnerId)
                 .serviceCenterName(partnerName)
+                .costAmount(cost != null ? cost.getAmount() : null)
+                .costCurrency(cost != null ? cost.getCurrency() : null)
                 .finalCostAmount(amount != null ? amount.getAmount() : null)
                 .finalCostCurrency(amount != null ? amount.getCurrency() : null)
                 .serviceGroups(item.getServiceGroups() != null ? new ArrayList<>(item.getServiceGroups()) : new ArrayList<>())
@@ -242,6 +296,7 @@ public class PartnerServiceVisitIngestServiceImpl implements PartnerServiceVisit
                 .serviceCode(line.getServiceCode())
                 .serviceName(line.getServiceName())
                 .universalServiceId(normalizeUniversalServiceId(line.getUniversalServiceId()))
+                .serviceGroups(line.getServiceGroups() != null ? new ArrayList<>(line.getServiceGroups()) : new ArrayList<>())
                 .costAmount(cost != null ? cost.getAmount() : null)
                 .costCurrency(cost != null ? cost.getCurrency() : null)
                 .nextServiceDate(line.getNextServiceDate())

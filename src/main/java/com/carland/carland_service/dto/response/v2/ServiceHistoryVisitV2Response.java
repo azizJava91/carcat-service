@@ -27,5 +27,8 @@ public class ServiceHistoryVisitV2Response {
     private PartnerDataResponse partner;
     private String dealer;
     private MoneyResponse amount;
+    /** Pre-discount visit cost from Hyper {@code cost}. */
+    private MoneyResponse cost;
+    private String invoiceNumber;
     private List<ServiceHistoryPartV2Response> parts;
 }

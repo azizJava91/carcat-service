@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -15,6 +16,7 @@ public class ServiceHistoryLineV2Response {
     private Integer serviceCode;
     private String universalServiceId;
     private String serviceName;
+    private List<String> serviceGroups;
     private MoneyResponse cost;
     private LocalDate nextServiceDate;
     private Integer nextServiceMileage;

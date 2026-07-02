@@ -1,7 +1,7 @@
 $bodyPath = Join-Path $env:TEMP "webhook-body.json"
 $secret = "Y2FybGFuZC1zZWNyZXQta2V5LXNoYXJlZC13aXRoLWh5cGVy"
 
-$body = '{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"serviceCenterId":1,"serviceCenterName":"HyperService","dealer":"Test Dealer","amount":{"amount":85.00,"currency":"AZN"},"serviceGroups":["Engine"],"services":[{"serviceCode":55555,"universalServiceId":"Engine oil & filter","serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"},"nextServiceDate":"2027-06-15","nextServiceMileage":72000}],"parts":[{"name":"Engine oil filter","qty":1,"unit":"pc"}]}]}'
+$body = '{"plate":"99-FH-032","vin":"3FA6P0HDXKR168752","brand":"Ford","model":"Fusion","year":2019,"engineVolume":1.5,"engineType":null,"bodyType":null,"trim":null,"currentMileage":121000,"serviceHistory":[{"recordId":19387,"serviceType":"Mühərrik xidməti","serviceGroups":["Mühərrik xidməti","Salon xidməti"],"lastServiceDate":"2026-05-25","lastServiceMileage":121000,"services":[{"serviceCode":7,"serviceName":"EXTRA Mühərrik yağının dəyişdirilməsi","serviceGroups":["Mühərrik xidməti"],"universalServiceId":"Engine oil & filter","cost":{"amount":0,"currency":"AZN"},"nextServiceDate":null,"nextServiceMileage":null}],"parts":[{"name":"5W-20","qty":0.8,"unit":null}],"cost":{"amount":47.4,"currency":"AZN"},"finalCost":{"amount":47.4,"currency":"AZN"},"nextServiceDate":null,"nextServiceMileage":null,"invoiceNumber":null,"dealer":"Babək Ekspress"}]}'
 
 [System.IO.File]::WriteAllText($bodyPath, $body, [System.Text.UTF8Encoding]::new($false))
 

@@ -207,31 +207,39 @@ public class CarVinHistoryServiceV2Impl implements CarVinHistoryServiceV2 {
                 .partnerRecordId(visit.getHyperRecordId())
                 .type(ServiceTypeTranslation.translate(visit.getServiceType(), acceptLanguage))
                 .serviceGroups(serviceGroups)
-                .services(mapServiceLines(visit.getServices()))
+                .services(mapServiceLines(visit.getServices(), acceptLanguage))
                 .date(visit.getLastServiceDate())
                 .mileage(visit.getLastServiceMileage())
                 .serviceCenterId(partnerId)
                 .serviceCenterName(partnerName)
                 .partner(partnerLookupService.toDataResponse(partnerById.get(partnerId), enumPartner))
                 .dealer(visit.getDealer())
+                .cost(toMoney(visit.getCostAmount(), visit.getCostCurrency()))
                 .amount(toMoney(visit.getFinalCostAmount(), visit.getFinalCostCurrency()))
+                .invoiceNumber(visit.getInvoiceNumber())
                 .parts(mapParts(visit.getParts()))
                 .build();
     }
 
-    private List<ServiceHistoryLineV2Response> mapServiceLines(List<ServiceHistoryV2> lines) {
+    private List<ServiceHistoryLineV2Response> mapServiceLines(List<ServiceHistoryV2> lines, String acceptLanguage) {
         if (lines == null || lines.isEmpty()) {
             return Collections.emptyList();
         }
         return lines.stream()
-                .map(line -> ServiceHistoryLineV2Response.builder()
-                        .serviceCode(line.getServiceCode())
-                        .universalServiceId(line.getUniversalServiceId())
-                        .serviceName(line.getServiceName())
-                        .cost(toMoney(line.getCostAmount(), line.getCostCurrency()))
-                        .nextServiceDate(line.getNextServiceDate())
-                        .nextServiceMileage(line.getNextServiceMileage())
-                        .build())
+                .map(line -> {
+                    List<String> lineGroups = line.getServiceGroups() == null
+                            ? Collections.emptyList()
+                            : ServiceTypeTranslation.translateList(line.getServiceGroups(), acceptLanguage);
+                    return ServiceHistoryLineV2Response.builder()
+                            .serviceCode(line.getServiceCode())
+                            .universalServiceId(line.getUniversalServiceId())
+                            .serviceName(line.getServiceName())
+                            .serviceGroups(lineGroups)
+                            .cost(toMoney(line.getCostAmount(), line.getCostCurrency()))
+                            .nextServiceDate(line.getNextServiceDate())
+                            .nextServiceMileage(line.getNextServiceMileage())
+                            .build();
+                })
                 .toList();
     }
 

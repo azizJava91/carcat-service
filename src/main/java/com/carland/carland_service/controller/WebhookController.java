@@ -1,7 +1,7 @@
 package com.carland.carland_service.controller;
 
 import com.carland.carland_service.dto.request.PartnerUpdateServiceVisitRequest;
-import com.carland.carland_service.dto.response.v2.CarVinServiceHistoryV2Response;
+import com.carland.carland_service.dto.response.hyper.HyperVehicleByVinResponse;
 import com.carland.carland_service.dto.response.v2.PartnerNewServiceVisitResult;
 import com.carland.carland_service.dto.response.v2.PartnerUpdateServiceVisitResult;
 import com.carland.carland_service.repository.CarRepository;
@@ -61,9 +61,8 @@ public class WebhookController {
     }
 
     @PostMapping("/new-service-visit")
-    public ResponseEntity<PartnerNewServiceVisitResult> newServiceVisit(
-            HttpServletRequest httpRequest,
-            @RequestBody CarVinServiceHistoryV2Response request) {
+    public ResponseEntity<PartnerNewServiceVisitResult> newServiceVisit(HttpServletRequest httpRequest,
+                                                                        @RequestBody HyperVehicleByVinResponse request) {
         logRabbitReplayIfNeeded(httpRequest);
         PartnerNewServiceVisitResult result = partnerServiceVisitIngestService.ingest(request);
         return ResponseEntity.status(resolveIngestStatus(result)).body(result);

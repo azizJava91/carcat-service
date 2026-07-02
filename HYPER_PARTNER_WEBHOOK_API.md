@@ -162,28 +162,39 @@ X-Signature: <hmac of raw body bytes>
 
 ### Body schema
 
+Hyper native vehicle payload — same shape as Hyper’s VIN history API and what Carland uses internally for `service-history/v2` ingest.
+
 Root object:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `vin` | string | **Yes** | Vehicle VIN (must exist in Carland) |
-| `source` | string | No | Source label, e.g. `"hyper"` |
-| `summary` | object | No | Ignored on ingest; optional |
-| `items` | array | **Yes** | One or more visit records |
+| `plate` | string | No | License plate; updates car if sent |
+| `brand` | string | No | Car brand |
+| `model` | string | No | Car model |
+| `year` | integer | No | Model year |
+| `engineVolume` | number | No | Engine volume in litres (e.g. `1.5`) |
+| `engineType` | string | No | Engine type |
+| `bodyType` | string | No | Body type |
+| `trim` | string | No | Trim level |
+| `currentMileage` | integer | No | Current odometer; updates car if sent |
+| `serviceHistory` | array | **Yes** | One or more visit records |
 
-Each element in `items[]`:
+Each element in `serviceHistory[]`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `partnerRecordId` | long | **Yes** | Hyper's unique visit ID (idempotency key) |
-| `type` | string | No | e.g. `"Maintenance"`, `"Repair"` |
-| `date` | string (date) | No | `YYYY-MM-DD` |
-| `mileage` | integer | No | Odometer at service |
-| `serviceCenterId` | long | No | Partner/service center ID (default: Hyper) |
-| `serviceCenterName` | string | No | Display name |
+| `recordId` | long | **Yes** | Hyper's unique visit ID (idempotency key) |
+| `serviceType` | string | No | e.g. `"Mühərrik xidməti"` |
+| `serviceGroups` | string[] | No | Visit-level service groups |
+| `lastServiceDate` | string (date) | No | `YYYY-MM-DD` |
+| `lastServiceMileage` | integer | No | Odometer at service |
 | `dealer` | string | No | Dealer name |
-| `amount` | money | No | Total visit cost |
-| `serviceGroups` | string[] | No | e.g. `["Engine","Brakes"]` |
+| `invoiceNumber` | string | No | Invoice reference |
+| `cost` | money | No | Pre-discount visit cost |
+| `finalCost` | money | No | Final visit cost (falls back to `cost` if omitted) |
+| `nextServiceDate` | string (date) | No | Visit-level next due date (informational) |
+| `nextServiceMileage` | integer | No | Visit-level next due mileage (informational) |
 | `services` | array | No | Service lines |
 | `parts` | array | No | Parts used |
 
@@ -192,11 +203,12 @@ Each element in `items[]`:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `serviceCode` | integer | No | Hyper line identifier |
-| `universalServiceId` | string | No | Universal service catalog ID (`"other"` → stored as empty) |
 | `serviceName` | string | No | Line description |
+| `serviceGroups` | string[] | No | Line-level service groups |
+| `universalServiceId` | string | No | Universal service catalog ID (`"other"` → stored as empty) |
 | `cost` | money | No | Line cost |
-| `nextServiceDate` | string (date) | No | Next due date |
-| `nextServiceMileage` | integer | No | Next due mileage |
+| `nextServiceDate` | string (date) | No | Next due date (used for percentage sync) |
+| `nextServiceMileage` | integer | No | Next due mileage (used for percentage sync) |
 
 `parts[]`:
 
@@ -220,20 +232,50 @@ Each element in `items[]`:
 | Visit exists; new lines/parts added | **200** | `linesCreated > 0` or `partsCreated > 0` |
 | Visit + all lines/parts already exist | **409** | No new data |
 | VIN not in Carland | **404** | |
-| Missing `vin` or `items` | **400** | |
+| Missing `vin` or `serviceHistory` | **400** | |
 | Invalid JSON | **400** | |
 | Invalid signature | **401** | |
 | Carland down | **202 Accepted** | Queued for retry (see §8) |
 
-Items **without** `partnerRecordId` are skipped silently (not an error).
+Items **without** `recordId` are skipped silently (not an error).
 
 Duplicate line match key: `serviceCode + universalServiceId + serviceName`.  
 Duplicate part match key: `name + qty + unit`.
 
-### Example request body (single line)
+### Example request body
 
 ```json
-{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"serviceCenterId":1,"serviceCenterName":"HyperService","dealer":"Test Dealer","amount":{"amount":85.00,"currency":"AZN"},"serviceGroups":["Engine"],"services":[{"serviceCode":55555,"universalServiceId":"Engine oil & filter","serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"},"nextServiceDate":"2027-06-15","nextServiceMileage":72000}],"parts":[{"name":"Engine oil filter","qty":1,"unit":"pc"}]}]}
+{
+    "plate": "99-FH-032",
+    "vin": "3FA6P0HDXKR168752",
+    "brand": "Ford",
+    "model": "Fusion",
+    "year": 2019,
+    "engineVolume": 1.5,
+    "currentMileage": 121000,
+    "serviceHistory": [
+        {
+            "recordId": 19387,
+            "serviceType": "Mühərrik xidməti",
+            "serviceGroups": ["Mühərrik xidməti", "Salon xidməti"],
+            "lastServiceDate": "2026-05-25",
+            "lastServiceMileage": 121000,
+            "services": [
+                {
+                    "serviceCode": 7,
+                    "serviceName": "EXTRA Mühərrik yağının dəyişdirilməsi",
+                    "serviceGroups": ["Mühərrik xidməti"],
+                    "universalServiceId": "Engine oil & filter",
+                    "cost": {"amount": 0, "currency": "AZN"}
+                }
+            ],
+            "parts": [{"name": "5W-20", "qty": 0.8}],
+            "cost": {"amount": 47.4, "currency": "AZN"},
+            "finalCost": {"amount": 47.4, "currency": "AZN"},
+            "dealer": "Babək Ekspress"
+        }
+    ]
+}
 ```
 
 ### Example — 200 Created
@@ -515,7 +557,7 @@ curl -s -o /dev/null -w "%{http_code}" \
 ### POST — new visit
 
 ```bash
-BODY='{"vin":"HHGHHHJHGHHHHHGGG","source":"hyper","items":[{"partnerRecordId":33333,"type":"Maintenance","date":"2026-06-15","mileage":52000,"services":[{"serviceCode":55555,"serviceName":"Engine oil & filter","cost":{"amount":85.00,"currency":"AZN"}}]}]}'
+BODY='{"vin":"3FA6P0HDXKR168752","currentMileage":121000,"serviceHistory":[{"recordId":19387,"serviceType":"Mühərrik xidməti","lastServiceDate":"2026-05-25","lastServiceMileage":121000,"services":[{"serviceCode":7,"serviceName":"Engine oil change","universalServiceId":"Engine oil & filter","cost":{"amount":47.4,"currency":"AZN"}}],"finalCost":{"amount":47.4,"currency":"AZN"},"dealer":"Babək Ekspress"}]}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
 
 curl -X POST "https://digital-innovation.agency/webhook/partner/new-service-visit" \
